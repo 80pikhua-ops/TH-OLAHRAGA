@@ -272,6 +272,25 @@
   .land-back-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 7px 14px; border-radius: 8px; cursor: pointer; font-size: 16px; font-family: 'Outfit', sans-serif; transition: all 0.2s; }
   .land-back-btn:hover { color: var(--text); border-color: var(--gold); }
   .land-page-enter { animation: fadeIn 0.25s ease; }
+  .land-role-btn { display: flex; align-items: center; gap: 16px; width: 100%; max-width: 420px; padding: 18px 22px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; color: var(--text); cursor: pointer; transition: all 0.25s; text-align: left; font-family: 'Outfit', sans-serif; position: relative; overflow: hidden; }
+  .land-role-btn::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--muted); transition: background 0.2s; }
+  .land-role-btn:hover { border-color: var(--gold); background: var(--bg3); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,0.35); }
+  .land-role-btn:hover::before { background: var(--gold); }
+  .land-role-ajk::before { background: var(--blue); }
+  .land-role-ajk:hover::before { background: var(--blue); }
+  .land-role-ajk:hover { border-color: var(--blue); }
+  .land-role-admin::before { background: var(--gold); }
+  .land-role-admin:hover::before { background: var(--gold); }
+  .land-role-admin:hover { border-color: var(--gold); }
+  .land-role-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+  .land-role-icon-tetamu { background: rgba(122,134,168,0.15); }
+  .land-role-icon-ajk { background: rgba(58,123,213,0.15); }
+  .land-role-icon-admin { background: rgba(245,197,24,0.15); }
+  .land-step-title { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(28px,5vw,44px); font-weight: 900; margin: 10px 0 6px; letter-spacing: -0.5px; }
+  .land-step-title span { color: var(--gold); }
+  .land-kod-section { margin-top: 16px; padding: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; text-align: left; animation: fadeIn 0.25s ease; }
+  .land-form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .land-tambah-form { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px; text-align: left; margin-top: 16px; }
 </style>
 
 <!-- ===== FIREBASE ===== -->
@@ -345,54 +364,189 @@
       </div>
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-gold btn-sm" onclick="showLoginModal()">🔑 Log Masuk</button>
+      <div style="font-size:14px;color:var(--muted);padding:7px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px">Sistem Pengurusan Olahraga</div>
     </div>
   </div>
 
   <div class="land-hero">
-    <div class="land-hero-inner" id="land-page-1">
+
+    <!-- ===== PANEL 1: PILIH PERANAN ===== -->
+    <div class="land-hero-inner land-page-enter" id="land-page-role">
       <div class="land-badge-pill">🏅 Sistem Pengurusan Kejohanan</div>
       <h1 class="land-hero-title">TIONG HIN<br><span>OLAHRAGA</span></h1>
-      <p class="land-hero-sub">Sistem pengurusan kejohanan olahraga SMK Tiong Hin — rekod, jadual dan papan markah terkini.</p>
+      <p class="land-hero-sub">Sistem pengurusan kejohanan olahraga SMK Tiong Hin.<br>Sila pilih peranan anda untuk meneruskan.</p>
       <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:8px">
-        <button class="land-main-btn" onclick="goToPage2()">
-          <span style="font-size:22px">🏟️</span>
-          <div style="text-align:left">
-            <div style="font-weight:700;font-size: 16px">Lihat Kejohanan</div>
-            <div style="font-size: 16px;opacity:0.7;margin-top:1px">Semak jadual, keputusan &amp; papan markah</div>
+
+        <button class="land-role-btn" onclick="showLandTetamu()">
+          <div class="land-role-icon land-role-icon-tetamu">👁️</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:17px">Tetamu</div>
+            <div style="font-size:14px;opacity:0.65;margin-top:2px">Lihat jadual, keputusan &amp; papan markah</div>
           </div>
-          <span style="margin-left:auto;font-size:18px;opacity:0.6">›</span>
+          <span style="font-size:20px;opacity:0.4">›</span>
         </button>
-        <button class="btn btn-gold" onclick="showLoginModal()" style="width:100%;max-width:400px;justify-content:center;padding:14px;font-size: 16px">
-          🔑 Log Masuk
+
+        <button class="land-role-btn land-role-ajk" onclick="showLandAJK()">
+          <div class="land-role-icon land-role-icon-ajk">👥</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:17px">Pasukan / Sekolah / AJK</div>
+            <div style="font-size:14px;opacity:0.65;margin-top:2px">Log masuk sebagai wakil pasukan atau AJK</div>
+          </div>
+          <span style="font-size:20px;opacity:0.4">›</span>
         </button>
-        <div style="font-size: 16px;color:var(--muted)">Akaun pengguna biasa didaftarkan oleh pentadbir sistem</div>
+
+        <button class="land-role-btn land-role-admin" onclick="showLandAdmin()">
+          <div class="land-role-icon land-role-icon-admin">👑</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:17px">Pentadbir</div>
+            <div style="font-size:14px;opacity:0.65;margin-top:2px">Urus kejohanan, peserta &amp; tetapan sistem</div>
+          </div>
+          <span style="font-size:20px;opacity:0.4">›</span>
+        </button>
+
       </div>
     </div>
 
-    <div class="land-hero-inner" id="land-page-2" style="display:none">
-      <button class="land-back-btn" onclick="goToPage1()">← Kembali</button>
-      <div class="land-badge-pill" style="margin-top:12px">🏟️ Pilih Kejohanan</div>
-      <h2 style="font-family:'Barlow Condensed',sans-serif;font-size:clamp(32px,6vw,52px);font-weight:900;margin:10px 0 6px;letter-spacing:-0.5px">KEJOHANAN <span style="color:var(--gold)">BERDAFTAR</span></h2>
-      <p style="font-size: 16px;color:var(--muted);margin-bottom:24px">Pilih kejohanan untuk masuk sebagai tetamu dan lihat maklumat terkini.</p>
-      <div class="land-section-label">📋 Senarai Kejohanan</div>
-      <div id="land-tournament-list">
-        <div class="land-empty">
-          <div style="font-size:48px;opacity:0.3;margin-bottom:12px">🏟️</div>
-          <div style="font-size: 16px;color:var(--muted)">Tiada kejohanan berdaftar lagi</div>
-          <div style="font-size: 16px;color:var(--muted);margin-top:6px">Log masuk sebagai Admin untuk mendaftar kejohanan</div>
+    <!-- ===== PANEL 2: PENTADBIR — SENARAI KEJOHANAN ===== -->
+    <div class="land-hero-inner" id="land-page-admin" style="display:none">
+      <button class="land-back-btn" onclick="showLandRole()">← Kembali</button>
+      <div class="land-badge-pill" style="margin-top:14px">👑 Pentadbir</div>
+      <div class="land-step-title">PILIH <span>KEJOHANAN</span></div>
+      <p style="font-size:16px;color:var(--muted);margin-bottom:20px">Pilih kejohanan untuk log masuk atau tambah kejohanan baru.</p>
+      <div class="land-section-label">📋 Kejohanan Berdaftar</div>
+      <div id="land-admin-list"></div>
+      <button class="btn btn-gold" onclick="showLandTambah()" style="width:100%;margin-top:16px;justify-content:center;padding:14px;font-size:16px">
+        ➕ Tambah Kejohanan Baru
+      </button>
+    </div>
+
+    <!-- ===== PANEL 3: PENTADBIR — TAMBAH KEJOHANAN ===== -->
+    <div class="land-hero-inner" id="land-page-tambah" style="display:none">
+      <button class="land-back-btn" onclick="showLandAdmin()">← Kembali</button>
+      <div class="land-badge-pill" style="margin-top:14px">➕ Tambah Kejohanan</div>
+      <div class="land-step-title">MAKLUMAT <span>KEJOHANAN</span></div>
+      <p style="font-size:16px;color:var(--muted);margin-bottom:16px">Isi maklumat kejohanan baru untuk sistem ini.</p>
+      <div class="land-tambah-form">
+        <div class="land-form-group">
+          <label style="font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px">Kod Kejohanan *</label>
+          <input type="text" id="tambah-kod" placeholder="Cth: TH2026, SMK-OL" style="text-transform:uppercase;letter-spacing:2px;font-weight:700;font-size:16px">
+          <div style="font-size:14px;color:var(--muted);margin-top:3px">⚠️ Kod <strong>tidak boleh diubah</strong> setelah disimpan.</div>
         </div>
-      </div>
-      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);text-align:center;font-size: 16px;color:var(--muted)">
-        Ada akaun? <button onclick="goToPage1()" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size: 16px;font-weight:600">Log masuk di sini →</button>
+        <div class="land-form-group">
+          <label style="font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px">Nama Kejohanan *</label>
+          <input type="text" id="tambah-nama" placeholder="Cth: Kejohanan Olahraga Tahunan SMK Tiong Hin">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="land-form-group">
+            <label style="font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px">Tarikh Mula *</label>
+            <input type="date" id="tambah-tarikh-mula">
+          </div>
+          <div class="land-form-group">
+            <label style="font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px">Tarikh Tutup Daftar *</label>
+            <input type="date" id="tambah-tarikh-tutup">
+          </div>
+        </div>
+        <div id="tambah-error" style="display:none;padding:10px 14px;background:rgba(232,67,58,0.1);border:1px solid rgba(232,67,58,0.3);border-radius:8px;font-size:15px;color:#ff7066;margin-bottom:10px"></div>
+        <button class="btn btn-gold" onclick="saveTambahKejohanan()" style="width:100%;justify-content:center;padding:13px;font-size:16px;margin-top:4px">
+          💾 Simpan &amp; Log Masuk sebagai Admin
+        </button>
       </div>
     </div>
+
+    <!-- ===== PANEL 4: PENTADBIR — LOG MASUK KE KEJOHANAN ===== -->
+    <div class="land-hero-inner" id="land-page-admin-login" style="display:none">
+      <button class="land-back-btn" onclick="showLandAdmin()">← Kembali</button>
+      <div class="land-badge-pill" style="margin-top:14px">🔑 Log Masuk Pentadbir</div>
+      <div class="land-step-title">AKAUN <span>PENTADBIR</span></div>
+      <div id="land-admin-kejohanan-info" style="margin:12px 0 20px;padding:14px 18px;background:rgba(245,197,24,0.08);border:1px solid rgba(245,197,24,0.25);border-radius:10px;text-align:left"></div>
+      <div class="land-tambah-form">
+        <div class="land-form-group">
+          <label style="font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px">Nama Pengguna</label>
+          <input type="text" id="land-admin-user" placeholder="Nama pengguna admin" autocomplete="username">
+        </div>
+        <div class="land-form-group">
+          <label style="font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px">Kata Laluan</label>
+          <div style="position:relative">
+            <input type="password" id="land-admin-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAdminLandLogin()">
+            <button onclick="toggleLandAdminPass()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">👁️</button>
+          </div>
+        </div>
+        <div id="land-admin-error" style="display:none;padding:10px 14px;background:rgba(232,67,58,0.1);border:1px solid rgba(232,67,58,0.3);border-radius:8px;font-size:15px;color:#ff7066;margin-bottom:10px"></div>
+        <button class="btn btn-gold" onclick="doAdminLandLogin()" style="width:100%;justify-content:center;padding:13px;font-size:16px;margin-top:4px">
+          🔑 Log Masuk →
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== PANEL 5: TETAMU — PILIH KEJOHANAN ===== -->
+    <div class="land-hero-inner" id="land-page-tetamu" style="display:none">
+      <button class="land-back-btn" onclick="showLandRole()">← Kembali</button>
+      <div class="land-badge-pill" style="margin-top:14px">👁️ Tetamu</div>
+      <div class="land-step-title">PILIH <span>KEJOHANAN</span></div>
+      <p style="font-size:16px;color:var(--muted);margin-bottom:20px">Pilih kejohanan dan masukkan kod untuk meneruskan.</p>
+      <div class="land-section-label">📋 Kejohanan Berdaftar</div>
+      <div id="land-tetamu-list"></div>
+      <!-- Kod input — muncul bila kejohanan dipilih -->
+      <div id="land-tetamu-kod-section" style="display:none" class="land-kod-section">
+        <div style="font-weight:700;font-size:15px;margin-bottom:12px;color:var(--silver)">🔑 Masukkan Kod Kejohanan</div>
+        <div class="land-form-group">
+          <input type="text" id="land-tetamu-kod" placeholder="Masukkan kod kejohanan..." style="text-transform:uppercase;letter-spacing:3px;font-size:17px;font-weight:700;text-align:center" onkeydown="if(event.key==='Enter')doTetamuLandLogin()">
+          <div style="font-size:14px;color:var(--muted);margin-top:4px">Kod ini diberikan oleh pentadbir kejohanan</div>
+        </div>
+        <div id="land-tetamu-error" style="display:none;padding:10px 14px;background:rgba(232,67,58,0.1);border:1px solid rgba(232,67,58,0.3);border-radius:8px;font-size:15px;color:#ff7066;margin-bottom:10px"></div>
+        <button class="btn btn-gold" onclick="doTetamuLandLogin()" style="width:100%;justify-content:center;padding:12px;font-size:16px">
+          Masuk sebagai Tetamu →
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== PANEL 6: AJK/PASUKAN — PILIH KEJOHANAN ===== -->
+    <div class="land-hero-inner" id="land-page-ajk" style="display:none">
+      <button class="land-back-btn" onclick="showLandRole()">← Kembali</button>
+      <div class="land-badge-pill" style="margin-top:14px">👥 Pasukan / Sekolah / AJK</div>
+      <div class="land-step-title">PILIH <span>KEJOHANAN</span></div>
+      <p style="font-size:16px;color:var(--muted);margin-bottom:20px">Pilih kejohanan untuk log masuk ke akaun anda.</p>
+      <div class="land-section-label">📋 Kejohanan Berdaftar</div>
+      <div id="land-ajk-list"></div>
+    </div>
+
+    <!-- ===== PANEL 7: AJK/PASUKAN — LOG MASUK ===== -->
+    <div class="land-hero-inner" id="land-page-ajk-login" style="display:none">
+      <button class="land-back-btn" onclick="showLandAJK()">← Kembali</button>
+      <div class="land-badge-pill" style="margin-top:14px">🔑 Log Masuk</div>
+      <div class="land-step-title">AKAUN <span>PASUKAN / AJK</span></div>
+      <div id="land-ajk-kejohanan-info" style="margin:12px 0 20px;padding:14px 18px;background:rgba(58,123,213,0.08);border:1px solid rgba(58,123,213,0.25);border-radius:10px;text-align:left"></div>
+      <div class="land-tambah-form">
+        <div class="land-form-group">
+          <label style="font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px">Nama Pengguna</label>
+          <input type="text" id="land-ajk-user" placeholder="Nama pengguna anda" autocomplete="username">
+        </div>
+        <div class="land-form-group">
+          <label style="font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px">Kata Laluan</label>
+          <div style="position:relative">
+            <input type="password" id="land-ajk-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAJKLandLogin()">
+            <button onclick="toggleLandAJKPass()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">👁️</button>
+          </div>
+        </div>
+        <div id="land-ajk-error" style="display:none;padding:10px 14px;background:rgba(232,67,58,0.1);border:1px solid rgba(232,67,58,0.3);border-radius:8px;font-size:15px;color:#ff7066;margin-bottom:10px"></div>
+        <div style="padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:15px;color:var(--muted);margin-bottom:14px">
+          💡 Kata laluan anda dikeluarkan oleh pentadbir kejohanan. Hubungi admin jika belum ada akaun.
+        </div>
+        <button class="btn btn-gold" onclick="doAJKLandLogin()" style="width:100%;justify-content:center;padding:13px;font-size:16px;margin-top:4px">
+          🔑 Log Masuk →
+        </button>
+      </div>
+    </div>
+
   </div>
 
   <div class="land-footer">© SMK Tiong Hin · Sistem Pengurusan Olahraga</div>
 </div>
 
-<!-- LOGIN MODAL -->
+<!-- hidden stub for legacy renderLandingTournaments calls -->
+<div id="land-tournament-list" style="display:none"></div>
+
+<!-- LOGIN MODAL (legacy, kept for backward compat) -->
 <div class="modal-overlay" id="login-modal">
   <div class="modal" style="max-width:400px">
     <div class="modal-header">
@@ -4884,38 +5038,225 @@ function toggleUserActive(id) {
   saveUsers();
 }
 
-// ===== LANDING & AUTH =====
-function showLoginModal(type) {
-  document.getElementById('login-modal').classList.add('show');
-  if (type === 'guest') {
-    document.getElementById('login-unified-form').style.display = 'none';
-    document.getElementById('login-guest-form').style.display = 'block';
-    document.getElementById('guest-error').style.display = 'none';
-    setTimeout(() => document.getElementById('guest-kod').focus(), 100);
-  } else { showUnifiedLogin(); }
+// ===== LANDING NAVIGATION =====
+function showLandPanel(id) {
+  ['land-page-role','land-page-admin','land-page-tambah','land-page-admin-login',
+   'land-page-tetamu','land-page-ajk','land-page-ajk-login'].forEach(p => {
+    const el = document.getElementById(p);
+    if (el) el.style.display = 'none';
+  });
+  const target = document.getElementById(id);
+  if (target) { target.style.display = 'block'; target.classList.add('land-page-enter'); }
+}
+function showLandRole() { showLandPanel('land-page-role'); }
+function showLandAdmin() {
+  renderLandAdminList();
+  showLandPanel('land-page-admin');
+}
+function showLandTambah() {
+  document.getElementById('tambah-kod').value = '';
+  document.getElementById('tambah-nama').value = '';
+  document.getElementById('tambah-tarikh-mula').value = '';
+  document.getElementById('tambah-tarikh-tutup').value = '';
+  document.getElementById('tambah-error').style.display = 'none';
+  showLandPanel('land-page-tambah');
+  setTimeout(() => document.getElementById('tambah-kod').focus(), 100);
+}
+function showLandTetamu() {
+  renderLandTetamuList();
+  document.getElementById('land-tetamu-kod-section').style.display = 'none';
+  document.getElementById('land-tetamu-kod').value = '';
+  document.getElementById('land-tetamu-error').style.display = 'none';
+  showLandPanel('land-page-tetamu');
+}
+function showLandAJK() {
+  renderLandAJKList();
+  showLandPanel('land-page-ajk');
 }
 
+// ===== RENDER TOURNAMENT LISTS =====
+function _buildTournamentCard(onclick_str, badge_color) {
+  if (!tetapan.kod || !tetapan.kodLocked) {
+    return `<div class="land-empty"><div style="font-size:40px;opacity:0.3;margin-bottom:10px">🏟️</div><div style="font-size:16px;color:var(--muted)">Tiada kejohanan berdaftar lagi</div></div>`;
+  }
+  const tarikhMula = tetapan.tarikhMula ? new Date(tetapan.tarikhMula).toLocaleDateString('ms-MY',{day:'numeric',month:'long',year:'numeric'}) : '-';
+  const tarikhTutup = tetapan.tarikhTutup ? new Date(tetapan.tarikhTutup).toLocaleDateString('ms-MY',{day:'numeric',month:'short'}) : '-';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const tMula = tetapan.tarikhMula ? new Date(tetapan.tarikhMula) : null;
+  const tTutup = tetapan.tarikhTutup ? new Date(tetapan.tarikhTutup) : null;
+  let statusBadge = '';
+  if (tTutup && today > tTutup) statusBadge = '<span class="badge badge-red" style="font-size:14px">Pendaftaran Ditutup</span>';
+  else if (tTutup && today <= tTutup) statusBadge = '<span class="badge badge-green" style="font-size:14px">Pendaftaran Dibuka</span>';
+  if (tMula && today >= tMula) statusBadge += ' <span class="badge badge-gold" style="font-size:14px">Sedang Berlangsung</span>';
+  const borderColor = badge_color || 'var(--gold)';
+  return `<div class="land-tournament-card" style="border-left-color:${borderColor}" onclick="${onclick_str}">
+    <div class="t-kod">${tetapan.kod}</div>
+    <div style="flex:1">
+      <div class="t-nama">${tetapan.nama || 'Kejohanan Olahraga'}</div>
+      <div class="t-meta">📅 ${tarikhMula} &nbsp;·&nbsp; 🚫 Daftar tutup: ${tarikhTutup}</div>
+      <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${statusBadge}</div>
+    </div>
+    <div style="color:var(--muted);font-size:20px">›</div>
+  </div>`;
+}
+
+function renderLandAdminList() {
+  const c = document.getElementById('land-admin-list');
+  if (!c) return;
+  c.innerHTML = _buildTournamentCard('selectAdminKejohanan()', 'var(--gold)');
+}
+function renderLandTetamuList() {
+  const c = document.getElementById('land-tetamu-list');
+  if (!c) return;
+  c.innerHTML = _buildTournamentCard('selectTetamuKejohanan()', 'var(--muted)');
+}
+function renderLandAJKList() {
+  const c = document.getElementById('land-ajk-list');
+  if (!c) return;
+  c.innerHTML = _buildTournamentCard('selectAJKKejohanan()', 'var(--blue)');
+}
+
+// backward compat for existing listeners
+function renderLandingTournaments() { renderLandAdminList(); renderLandTetamuList(); renderLandAJKList(); }
+
+// ===== KEJOHANAN SELECTION HANDLERS =====
+function selectAdminKejohanan() {
+  const el = document.getElementById('land-admin-kejohanan-info');
+  if (el) el.innerHTML = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--gold)">${tetapan.kod}</div><div style="font-weight:700;margin-top:2px">${tetapan.nama || 'Kejohanan Olahraga'}</div>`;
+  document.getElementById('land-admin-user').value = '';
+  document.getElementById('land-admin-pass').value = '';
+  document.getElementById('land-admin-error').style.display = 'none';
+  showLandPanel('land-page-admin-login');
+  setTimeout(() => document.getElementById('land-admin-user').focus(), 100);
+}
+function selectTetamuKejohanan() {
+  document.getElementById('land-tetamu-kod-section').style.display = 'block';
+  document.getElementById('land-tetamu-kod').value = '';
+  document.getElementById('land-tetamu-error').style.display = 'none';
+  setTimeout(() => document.getElementById('land-tetamu-kod').focus(), 100);
+}
+function selectAJKKejohanan() {
+  const el = document.getElementById('land-ajk-kejohanan-info');
+  if (el) el.innerHTML = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:#6ba3f5">${tetapan.kod}</div><div style="font-weight:700;margin-top:2px">${tetapan.nama || 'Kejohanan Olahraga'}</div>`;
+  document.getElementById('land-ajk-user').value = '';
+  document.getElementById('land-ajk-pass').value = '';
+  document.getElementById('land-ajk-error').style.display = 'none';
+  showLandPanel('land-page-ajk-login');
+  setTimeout(() => document.getElementById('land-ajk-user').focus(), 100);
+}
+
+// ===== TOGGLE PASSWORD VISIBILITY =====
+function toggleLandAdminPass() {
+  const inp = document.getElementById('land-admin-pass');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+function toggleLandAJKPass() {
+  const inp = document.getElementById('land-ajk-pass');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+// ===== LOGIN HANDLERS =====
+function doAdminLandLogin() {
+  const username = document.getElementById('land-admin-user').value.trim();
+  const pass = document.getElementById('land-admin-pass').value;
+  const errEl = document.getElementById('land-admin-error');
+  if (!username || !pass) { errEl.textContent = '❌ Sila isi nama pengguna dan kata laluan'; errEl.style.display = 'block'; return; }
+  if (username === ADMIN_USER && pass === getAdminPass()) {
+    currentUser = 'admin'; currentUserName = 'Admin'; currentUserLinkedSekolah = '';
+    document.getElementById('land-admin-pass').value = '';
+    enterApp('admin'); return;
+  }
+  errEl.textContent = '❌ Nama pengguna atau kata laluan tidak sah';
+  errEl.style.display = 'block';
+  document.getElementById('land-admin-pass').value = '';
+}
+
+function doTetamuLandLogin() {
+  const kod = document.getElementById('land-tetamu-kod').value.trim().toUpperCase();
+  const errEl = document.getElementById('land-tetamu-error');
+  if (!kod) { errEl.textContent = '❌ Sila masukkan kod kejohanan'; errEl.style.display = 'block'; return; }
+  if (!tetapan.kod || !tetapan.kodLocked) { errEl.textContent = '❌ Tiada kejohanan berdaftar. Hubungi pentadbir.'; errEl.style.display = 'block'; return; }
+  if (kod !== tetapan.kod) { errEl.textContent = '❌ Kod kejohanan tidak sah'; errEl.style.display = 'block'; return; }
+  currentUser = 'guest'; currentUserName = 'Tetamu'; currentUserLinkedSekolah = '';
+  enterApp('guest');
+}
+
+function doAJKLandLogin() {
+  const username = document.getElementById('land-ajk-user').value.trim();
+  const pass = document.getElementById('land-ajk-pass').value;
+  const errEl = document.getElementById('land-ajk-error');
+  if (!username || !pass) { errEl.textContent = '❌ Sila isi nama pengguna dan kata laluan'; errEl.style.display = 'block'; return; }
+  const found = users.find(u => u.username === username && u.password === pass && u.aktif !== false);
+  if (found) {
+    currentUser = found.role || 'user';
+    currentUserName = found.fullname || found.username;
+    currentUserLinkedSekolah = found.sekolahLinked || '';
+    document.getElementById('land-ajk-pass').value = '';
+    enterApp(found.role || 'user'); return;
+  }
+  errEl.textContent = '❌ Nama pengguna atau kata laluan tidak sah';
+  errEl.style.display = 'block';
+  document.getElementById('land-ajk-pass').value = '';
+}
+
+// ===== TAMBAH KEJOHANAN =====
+function saveTambahKejohanan() {
+  const kod = document.getElementById('tambah-kod').value.trim().toUpperCase();
+  const nama = document.getElementById('tambah-nama').value.trim();
+  const tarikhMula = document.getElementById('tambah-tarikh-mula').value;
+  const tarikhTutup = document.getElementById('tambah-tarikh-tutup').value;
+  const errEl = document.getElementById('tambah-error');
+  errEl.style.display = 'none';
+  if (!kod) { errEl.textContent = '❌ Sila masukkan Kod Kejohanan'; errEl.style.display = 'block'; return; }
+  if (!nama) { errEl.textContent = '❌ Sila masukkan Nama Kejohanan'; errEl.style.display = 'block'; return; }
+  if (!tarikhMula) { errEl.textContent = '❌ Sila pilih Tarikh Mula Kejohanan'; errEl.style.display = 'block'; return; }
+  if (!tarikhTutup) { errEl.textContent = '❌ Sila pilih Tarikh Tutup Pendaftaran'; errEl.style.display = 'block'; return; }
+  // Sync to tetapan and save
+  tetapan.kod = kod;
+  tetapan.kodLocked = true;
+  tetapan.nama = nama;
+  tetapan.tarikhMula = tarikhMula;
+  tetapan.tarikhTutup = tarikhTutup;
+  // Also sync to form fields in tetapan page
+  const setKod = document.getElementById('set-kod');
+  const setNama = document.getElementById('set-nama');
+  const setMula = document.getElementById('set-tarikh-mula');
+  const setTutup = document.getElementById('set-tarikh-tutup');
+  if (setKod) { setKod.value = kod; setKod.disabled = true; }
+  if (setNama) setNama.value = nama;
+  if (setMula) setMula.value = tarikhMula;
+  if (setTutup) setTutup.value = tarikhTutup;
+  const kodLock = document.getElementById('kod-lock-icon');
+  const kodMsg = document.getElementById('kod-locked-msg');
+  const kodDisplay = document.getElementById('kod-display');
+  if (kodLock) kodLock.style.display = '';
+  if (kodMsg) kodMsg.style.display = '';
+  if (kodDisplay) kodDisplay.textContent = kod;
+  DB.save('tionghin_tetapan', tetapan);
+  showAlert('✅ Kejohanan berjaya ditambah!', 'success');
+  currentUser = 'admin'; currentUserName = 'Admin'; currentUserLinkedSekolah = '';
+  enterApp('admin');
+}
+
+// ===== LEGACY MODAL (kept for backward compat but not shown in new flow) =====
+function showLoginModal(type) {
+  // Redirect to new flow
+  if (type === 'guest') { showLandTetamu(); }
+  else { showLandAdmin(); }
+}
+function closeLoginModal() {
+  document.getElementById('login-modal').classList.remove('show');
+}
 function showUnifiedLogin() {
   document.getElementById('login-unified-form').style.display = 'block';
   document.getElementById('login-guest-form').style.display = 'none';
   document.getElementById('login-error').style.display = 'none';
   setTimeout(() => document.getElementById('login-user').focus(), 100);
 }
-
-function closeLoginModal() {
-  document.getElementById('login-modal').classList.remove('show');
-  document.getElementById('login-user').value = '';
-  document.getElementById('login-pass').value = '';
-  document.getElementById('guest-kod').value = '';
-  document.getElementById('login-error').style.display = 'none';
-  document.getElementById('guest-error').style.display = 'none';
-}
-
 function togglePass() {
   const inp = document.getElementById('login-pass');
   inp.type = inp.type === 'password' ? 'text' : 'password';
 }
-
 function doLogin() {
   const username = document.getElementById('login-user').value.trim();
   const pass = document.getElementById('login-pass').value;
@@ -4929,7 +5270,6 @@ function doLogin() {
   if (found) {
     currentUser = found.role || 'user';
     currentUserName = found.fullname || found.username;
-    // CHANGE 2: Store the linked school when logging in
     currentUserLinkedSekolah = found.sekolahLinked || '';
     closeLoginModal(); enterApp(found.role || 'user'); return;
   }
@@ -4937,7 +5277,6 @@ function doLogin() {
   errEl.style.display = 'block';
   document.getElementById('login-pass').value = '';
 }
-
 function doGuestLogin() {
   const kod = document.getElementById('guest-kod').value.trim().toUpperCase();
   const errEl = document.getElementById('guest-error');
@@ -4951,7 +5290,6 @@ function doGuestLogin() {
 function enterApp(role) {
   document.getElementById('landing-page').style.display = 'none';
   document.getElementById('main-app').style.display = 'block';
-  const hiddenForRole = {
     admin: [],
     ajk: ['tetapan'],
     user: ['jadual', 'tetapan'],
@@ -4988,50 +5326,12 @@ function doLogout() {
   currentUser = null; currentUserName = ''; currentUserLinkedSekolah = '';
   document.getElementById('main-app').style.display = 'none';
   document.getElementById('landing-page').style.display = 'flex';
-  document.getElementById('land-page-1').style.display = 'block';
-  document.getElementById('land-page-2').style.display = 'none';
+  showLandRole();
 }
 
-function renderLandingTournaments() {
-  const container = document.getElementById('land-tournament-list');
-  if (!tetapan.kod || !tetapan.kodLocked) {
-    container.innerHTML = `<div class="land-empty"><div style="font-size:48px;opacity:0.3;margin-bottom:12px">🏟️</div><div style="font-size: 16px;color:var(--muted)">Tiada kejohanan berdaftar lagi</div><div style="font-size: 16px;color:var(--muted);margin-top:6px">Log masuk sebagai Admin untuk mendaftar kejohanan</div></div>`;
-    return;
-  }
-  const tarikhMula = tetapan.tarikhMula ? new Date(tetapan.tarikhMula).toLocaleDateString('ms-MY',{day:'numeric',month:'long',year:'numeric'}) : '-';
-  const tarikhTutup = tetapan.tarikhTutup ? new Date(tetapan.tarikhTutup).toLocaleDateString('ms-MY',{day:'numeric',month:'short'}) : '-';
-  const today = new Date(); today.setHours(0,0,0,0);
-  const tMula = tetapan.tarikhMula ? new Date(tetapan.tarikhMula) : null;
-  const tTutup = tetapan.tarikhTutup ? new Date(tetapan.tarikhTutup) : null;
-  let statusBadge = '';
-  if (tTutup && today > tTutup) statusBadge = '<span class="badge badge-red" style="font-size: 16px">Pendaftaran Ditutup</span>';
-  else if (tTutup && today <= tTutup) statusBadge = '<span class="badge badge-green" style="font-size: 16px">Pendaftaran Dibuka</span>';
-  if (tMula && today >= tMula) statusBadge += ' <span class="badge badge-gold" style="font-size: 16px">Sedang Berlangsung</span>';
-  container.innerHTML = `
-    <div class="land-tournament-card" onclick="showLoginModal('guest')">
-      <div class="t-kod">${tetapan.kod}</div>
-      <div style="flex:1">
-        <div class="t-nama">${tetapan.nama || 'Kejohanan Olahraga'}</div>
-        <div class="t-meta">📅 ${tarikhMula} &nbsp;·&nbsp; 🚫 Daftar tutup: ${tarikhTutup}</div>
-        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${statusBadge}</div>
-      </div>
-      <div style="color:var(--muted);font-size:18px">›</div>
-    </div>
-    <div style="text-align:center;font-size: 16px;color:var(--muted);margin-top:8px">Klik pada kejohanan untuk masuk sebagai tetamu</div>`;
-}
-
-function goToPage2() {
-  document.getElementById('land-page-1').style.display = 'none';
-  const p2 = document.getElementById('land-page-2');
-  p2.style.display = 'block'; p2.classList.add('land-page-enter');
-  renderLandingTournaments();
-}
-
-function goToPage1() {
-  document.getElementById('land-page-2').style.display = 'none';
-  const p1 = document.getElementById('land-page-1');
-  p1.style.display = 'block'; p1.classList.add('land-page-enter');
-}
+// goToPage1/goToPage2 kept for any residual references
+function goToPage1() { showLandRole(); }
+function goToPage2() { showLandTetamu(); }
 
 // ===== IMPORT CSV =====
 let _importParsed = []; // holds rows ready to commit
