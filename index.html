@@ -397,6 +397,32 @@
   <div class="land-footer">© SMK Tiong Hin · Sistem Pengurusan Olahraga</div>
 </div>
 
+<!-- CREATE TOURNAMENT MODAL -->
+<div class="modal-overlay" id="modal-create-tournament">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title">🏟️ Cipta Kejohanan Baru</div>
+      <button class="modal-close" onclick="closeCreateTournamentModal()">✕</button>
+    </div>
+    <div style="padding:4px 0 16px">
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:15px;font-weight:600;color:var(--silver);margin-bottom:6px">Nama Kejohanan <span style="color:var(--accent)">*</span></label>
+        <input id="new-tj-nama" type="text" class="input" placeholder="Cth: Kejohanan Olahraga Tahunan 2025" style="width:100%;font-size:16px" onkeydown="if(event.key==='Enter')document.getElementById('new-tj-kod').focus()">
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:15px;font-weight:600;color:var(--silver);margin-bottom:6px">Kod Kejohanan <span style="color:var(--accent)">*</span></label>
+        <input id="new-tj-kod" type="text" class="input" placeholder="Cth: TH2025" style="width:100%;font-size:16px;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')createTournament()">
+        <div style="font-size:13px;color:var(--muted);margin-top:5px">Kod ini digunakan oleh tetamu untuk masuk ke kejohanan. Boleh dikemaskini kemudian dalam Tetapan.</div>
+      </div>
+      <div id="new-tj-error" style="display:none;color:#ff7066;font-size:15px;padding:8px 12px;background:rgba(232,67,58,0.1);border-radius:8px;margin-bottom:4px"></div>
+    </div>
+    <div class="flex-end" style="gap:10px">
+      <button class="btn btn-outline" onclick="closeCreateTournamentModal()">Batal</button>
+      <button class="btn btn-gold" onclick="createTournament()">✅ Cipta Kejohanan</button>
+    </div>
+  </div>
+</div>
+
 <!-- LOGIN MODAL -->
 <div class="modal-overlay" id="login-modal">
   <div class="modal" style="max-width:400px">
@@ -4962,6 +4988,11 @@ function doLogin() {
     currentUser = 'admin'; currentUserName = 'Admin'; currentUserLinkedSekolah = '';
     if (!currentTournamentId) {
       closeLoginModal();
+      // Navigate admin to tournament list (land-page-2) so Tambah button is visible
+      document.getElementById('land-page-1').style.display = 'none';
+      const p2 = document.getElementById('land-page-2');
+      p2.style.display = 'block';
+      p2.classList.add('land-page-enter');
       renderLandingTournaments();
       showAlert('👑 Selamat datang Admin! Pilih atau cipta kejohanan.', 'info');
     } else {
