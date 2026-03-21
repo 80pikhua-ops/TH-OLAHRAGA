@@ -1481,6 +1481,7 @@ let users = [];
 
 function getAdminPass() { return adminPassCache || DEFAULT_PASS; }
 function saveUsers() { DB.set('tionghin_users', users); }
+function saveAdminPass(newPass) { adminPassCache = newPass; DB.set('tionghin_adminpass', newPass); }
 
 // ===== NAVIGATION =====
 function showPage(name) {
@@ -6181,6 +6182,7 @@ async function firebaseInit() {
   DB.listen('tionghin_schedules', val => { schedules = val; renderSchedule(); updateDashboard(); });
   DB.listen('tionghin_results', val => { results = val; renderResults(); updateDashboard(); renderDashRekodBaru(); });
   DB.listen('tionghin_pasukan_entries', val => { pasukanEntries = val; });
+  DB.listen('tionghin_users', val => { users = val; });
   DB.listen('tionghin_rekod_acara', val => { rekodAcara = val; renderDashRekod(); });
   DB.listen('tionghin_tetapan', val => {
     tetapan = val;
