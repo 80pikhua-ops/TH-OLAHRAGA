@@ -5232,7 +5232,7 @@ function saveTambahKejohanan() {
   if (kodLock) kodLock.style.display = '';
   if (kodMsg) kodMsg.style.display = '';
   if (kodDisplay) kodDisplay.textContent = kod;
-  DB.save('tionghin_tetapan', tetapan);
+  DB.set('tionghin_tetapan', tetapan);
   showAlert('✅ Kejohanan berjaya ditambah!', 'success');
   currentUser = 'admin'; currentUserName = 'Admin'; currentUserLinkedSekolah = '';
   enterApp('admin');
@@ -6424,6 +6424,21 @@ function printCetak2() {
 })();
 
 // ===== FIREBASE ASYNC INIT =====
+function dismissLoadingOverlay() {
+  const overlay = document.getElementById('firebase-loading');
+  if (overlay) {
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity 0.4s';
+    setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 400);
+  }
+}
+
+// Safety net: if Firebase hangs >10s, dismiss overlay anyway and show landing page
+const _firebaseSafetyTimeout = setTimeout(() => {
+  dismissLoadingOverlay();
+  showLandRole();
+}, 10000);
+
 async function firebaseInit() {
   const loadingMsg = document.getElementById('firebase-loading-msg');
   const loadingBar = document.getElementById('loading-bar');
@@ -6471,12 +6486,13 @@ async function firebaseInit() {
   if (savedUsers) users = savedUsers;
   if (savedAdminPass) adminPassCache = savedAdminPass;
 
+  clearTimeout(_firebaseSafetyTimeout);
+
   if (loadingBar) loadingBar.style.width = '100%';
   if (loadingMsg) loadingMsg.textContent = 'Berjaya! Memuatkan apl...';
   await new Promise(r => setTimeout(r, 400));
 
-  const overlay = document.getElementById('firebase-loading');
-  if (overlay) { overlay.style.opacity = '0'; overlay.style.transition = 'opacity 0.4s'; setTimeout(() => overlay.remove(), 400); }
+  dismissLoadingOverlay();
 
   // Real-time listeners
   DB.listen('tionghin_athletes', val => { athletes = val; renderAthletes(); updateDashboard(); });
@@ -6504,6 +6520,7 @@ async function firebaseInit() {
 }
 
 firebaseInit().catch(err => {
+  clearTimeout(_firebaseSafetyTimeout);
   console.error('Firebase init failed:', err);
   const overlay = document.getElementById('firebase-loading');
   if (overlay) {
