@@ -3992,8 +3992,13 @@ function renderDashRekodBaru() {
 
 // ===== DATA MANAGEMENT =====
 function _tetapanTanpaMaklumat() {
-  const { kod, nama, tarikhMula, tarikhTutup, kodLocked, ...rest } = tetapan;
-  return rest;
+  const t = Object.assign({}, tetapan);
+  delete t.kod;
+  delete t.nama;
+  delete t.tarikhMula;
+  delete t.tarikhTutup;
+  delete t.kodLocked;
+  return t;
 }
 
 function exportSemuaData() {
@@ -6550,6 +6555,12 @@ async function firebaseInit() {
   ]);
 
   if (savedAdminPass) adminPassCache = savedAdminPass;
+  // Force update to new default password if old password is still stored
+  const OLD_PASS = '#Lph312414hmp$O';
+  if (!adminPassCache || adminPassCache === OLD_PASS) {
+    adminPassCache = DEFAULT_PASS;
+    DB.set('tionghin_adminpass', DEFAULT_PASS);
+  }
   if (savedTournaments && Array.isArray(savedTournaments)) tournaments = savedTournaments;
 
   clearTimeout(_firebaseSafetyTimeout);
