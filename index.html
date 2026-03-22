@@ -5290,6 +5290,7 @@ function doGuestLogin() {
 function enterApp(role) {
   document.getElementById('landing-page').style.display = 'none';
   document.getElementById('main-app').style.display = 'block';
+  const hiddenForRole = {
     admin: [],
     ajk: ['tetapan'],
     user: ['jadual', 'tetapan'],
