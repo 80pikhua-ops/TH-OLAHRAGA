@@ -1255,7 +1255,7 @@
 
     <div class="card" style="margin-top:20px">
       <div class="card-title">🎂 Kategori Umur</div>
-      <div style="font-size: 16px;color:var(--muted);margin-bottom:16px">Urus senarai kategori umur yang digunakan dalam pendaftaran, jadual dan papan markah.</div>
+      <div style="font-size: 16px;color:var(--muted);margin-bottom:16px">Urus senarai kategori umur dan had tahun lahir peserta. Had digunakan untuk semak No. IC / No. Pendaftaran (6 digit pertama: YYMMDD).</div>
       <div class="grid-2">
         <div>
           <div style="font-size: 16px;font-weight:600;margin-bottom:12px;color:var(--silver)">➕ Tambah Kategori</div>
@@ -1269,6 +1269,27 @@
           <div style="font-size: 16px;font-weight:600;margin-bottom:12px;color:var(--silver)">📋 Kategori Semasa</div>
           <div id="kategori-tags" style="display:flex;flex-wrap:wrap;gap:8px;min-height:40px;align-items:flex-start"></div>
           <div style="font-size: 16px;color:var(--muted);margin-top:10px">Klik ❌ untuk padam kategori.</div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px">
+        <div style="font-size:16px;font-weight:600;margin-bottom:10px;color:var(--silver)">📅 Had Maksimum Tarikh Lahir (YYMMDD dari No. IC / No. Pendaftaran)</div>
+        <div style="font-size:15px;color:var(--muted);margin-bottom:12px;padding:10px 14px;background:rgba(58,123,213,0.07);border:1px solid rgba(58,123,213,0.2);border-radius:8px">
+          💡 6 digit pertama No. IC / No. Pendaftaran digunakan sebagai tarikh lahir (format <strong>YYMMDD</strong>). Peserta mesti lahir <strong>pada atau selepas</strong> tarikh had yang ditetapkan. Semakan mengambil kira tahun, bulan dan hari. Kosongkan jika tiada had.
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Kategori</th>
+              <th>Had Tarikh Lahir (YYMMDD) — peserta mesti lahir pada atau selepas tarikh ini</th>
+              <th></th>
+            </tr></thead>
+            <tbody id="had-umur-tbody"></tbody>
+          </table>
+        </div>
+        <div style="font-size:15px;color:var(--muted);margin-top:8px">Contoh: LA — Had <strong>081231</strong> bermaksud peserta mesti lahir <strong>pada atau selepas</strong> 31 Dis 2008 (YYMMDD: 081231) untuk layak kategori LA. Peserta yang lahir sebelum tarikh ini (lebih tua) akan ditolak.</div>
+        <div style="display:flex;justify-content:flex-end;margin-top:12px">
+          <button class="btn btn-gold btn-sm" onclick="saveHadUmur()">💾 Simpan Had Umur</button>
         </div>
       </div>
     </div>
@@ -1848,6 +1869,28 @@ function saveAthlete() {
   if (!nama || !sekolah || !kategori) {
     showAlert('Sila isi semua medan bertanda *', 'error');
     return;
+  }
+
+  // Validate IC / No. Pendaftaran against had umur for selected kategori
+  const noIcVal = document.getElementById('no-ic').value.trim();
+  if (noIcVal && tetapan.hadUmur && tetapan.hadUmur[kategori]) {
+    const had = tetapan.hadUmur[kategori];
+    if (had.maxTarikh && had.maxTarikh.length === 6) {
+      const icClean = noIcVal.replace(/[-\s]/g, '');
+      const yymmdd = icClean.slice(0, 6);
+      if (/^\d{6}$/.test(yymmdd)) {
+        if (parseInt(yymmdd, 10) < parseInt(had.maxTarikh, 10)) {
+          const yy = yymmdd.slice(0, 2);
+          const mm = yymmdd.slice(2, 4);
+          const dd = yymmdd.slice(4, 6);
+          const maxYY = had.maxTarikh.slice(0, 2);
+          const maxMM = had.maxTarikh.slice(2, 4);
+          const maxDD = had.maxTarikh.slice(4, 6);
+          showAlert(`❌ Peserta tidak layak untuk kategori ${kategori}. Tarikh lahir (20${yy}-${mm}-${dd}) melebihi had maksimum umur. Peserta mesti lahir pada atau selepas 20${maxYY}-${maxMM}-${maxDD}.`, 'error');
+          return;
+        }
+      }
+    }
   }
 
   // CHANGE 2: Enforce school scope for school users
@@ -4134,6 +4177,7 @@ function resetSemuaData() {
     topPos: 8, hadIndividu: 3, hadPasukan: 2, hadPesertaPerPasukan: 2, hadPasukanPerAcaraPasukan: 1,
     kodLocked: false,
     kategoriUmur: ['LA','LB','LC','PA','PB','PC'],
+    hadUmur: {},
     sekolahPasukan: [],
     acara: DEFAULT_ACARA,
     olahragawanKategori: ['LA','LB','LC'],
@@ -4464,12 +4508,14 @@ let tetapan = {
   topPos: 8, hadIndividu: 3, hadPasukan: 2, hadPesertaPerPasukan: 2, hadPasukanPerAcaraPasukan: 1,
   kodLocked: false,
   kategoriUmur: ['LA','LB','LC','PA','PB','PC'],
+  hadUmur: {},
   sekolahPasukan: [],
   acara: DEFAULT_ACARA,
   olahragawanKategori: ['LA','LB','LC'],
   olahragawatiKategori: ['PA','PB','PC']
 };
 if (!tetapan.kategoriUmur) tetapan.kategoriUmur = ['LA','LB','LC','PA','PB','PC'];
+if (!tetapan.hadUmur) tetapan.hadUmur = {};
 if (!tetapan.sekolahPasukan) tetapan.sekolahPasukan = [];
 if (!tetapan.acara) tetapan.acara = DEFAULT_ACARA;
 if (!tetapan.olahragawanKategori) tetapan.olahragawanKategori = ['LA','LB','LC'];
@@ -4504,6 +4550,50 @@ function renderKategoriTags() {
     <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(245,197,24,0.12);border:1px solid rgba(245,197,24,0.35);color:var(--gold);border-radius:20px;padding:5px 12px;font-size: 16px;font-weight:700;letter-spacing:0.5px">
       ${c}<button onclick="removeKategori('${c}')" style="background:none;border:none;cursor:pointer;color:rgba(245,197,24,0.6);font-size: 16px;line-height:1;padding:0" title="Padam">❌</button>
     </span>`).join('');
+  renderHadUmurTable();
+}
+
+function renderHadUmurTable() {
+  const tbody = document.getElementById('had-umur-tbody');
+  if (!tbody) return;
+  const cats = tetapan.kategoriUmur || [];
+  if (!tetapan.hadUmur) tetapan.hadUmur = {};
+  if (!cats.length) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:16px">Tiada kategori ditetapkan</td></tr>'; return; }
+  tbody.innerHTML = cats.map(kat => {
+    const had = tetapan.hadUmur[kat] || {};
+    const val = had.maxTarikh || '';
+    return `<tr>
+      <td><strong style="color:var(--gold)">${kat}</strong></td>
+      <td>
+        <input type="text" id="had-max-${kat}" value="${val}" placeholder="cth: 081231" maxlength="6"
+          style="width:120px;text-align:center;font-size:16px;font-weight:700;letter-spacing:2px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);outline:none"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6)">
+        <span style="font-size:14px;color:var(--muted);margin-left:8px">${val.length===6 ? '→ 20'+val.slice(0,2)+'-'+val.slice(2,4)+'-'+val.slice(4,6) : ''}</span>
+      </td>
+      <td><button class="btn btn-outline btn-sm" onclick="clearHadUmur('${kat}')">✕ Kosong</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function saveHadUmur() {
+  const cats = tetapan.kategoriUmur || [];
+  if (!tetapan.hadUmur) tetapan.hadUmur = {};
+  cats.forEach(kat => {
+    const max = (document.getElementById('had-max-' + kat)?.value || '').trim();
+    if (!max || max.length < 6) {
+      delete tetapan.hadUmur[kat];
+    } else {
+      tetapan.hadUmur[kat] = { maxTarikh: max };
+    }
+  });
+  DB.set(kKey('tetapan'), tetapan);
+  renderHadUmurTable();
+  showAlert('✅ Had maksimum tarikh lahir berjaya disimpan!');
+}
+
+function clearHadUmur(kat) {
+  const el = document.getElementById('had-max-' + kat);
+  if (el) el.value = '';
 }
 
 function addKategori() {
@@ -5686,6 +5776,20 @@ function parseImportCSV(text) {
     }
     if (isSchoolUser && !sekolah) sekolah = currentUserLinkedSekolah;
 
+    // Had umur validation via No. IC (YYMMDD)
+    if (noIc && kategori && tetapan.hadUmur && tetapan.hadUmur[kategori]) {
+      const had = tetapan.hadUmur[kategori];
+      if (had.maxTarikh && had.maxTarikh.length === 6) {
+        const icClean = noIc.replace(/[-\s]/g, '');
+        const yymmdd = icClean.slice(0, 6);
+        if (/^\d{6}$/.test(yymmdd) && parseInt(yymmdd, 10) < parseInt(had.maxTarikh, 10)) {
+          const yy = yymmdd.slice(0, 2), mm = yymmdd.slice(2, 4), dd = yymmdd.slice(4, 6);
+          const mYY = had.maxTarikh.slice(0, 2), mMM = had.maxTarikh.slice(2, 4), mDD = had.maxTarikh.slice(4, 6);
+          rowErrors.push(`Tarikh lahir (20${yy}-${mm}-${dd}) melebihi had maksimum umur kategori ${kategori} (lahir selepas 20${mYY}-${mMM}-${mDD})`);
+        }
+      }
+    }
+
     // Collect registered acara (utama & simpanan)
     const acara = [];
     const acaraSimpanan = [];
@@ -6710,6 +6814,7 @@ async function loadKejohananData(kod) {
   if (savedTetapan) {
     tetapan = savedTetapan;
     if (!tetapan.kategoriUmur) tetapan.kategoriUmur = ['LA','LB','LC','PA','PB','PC'];
+    if (!tetapan.hadUmur) tetapan.hadUmur = {};
     if (!tetapan.sekolahPasukan) tetapan.sekolahPasukan = [];
     if (!tetapan.acara) tetapan.acara = DEFAULT_ACARA;
     if (!tetapan.olahragawanKategori) tetapan.olahragawanKategori = [];
@@ -6731,7 +6836,7 @@ async function loadKejohananData(kod) {
     DB.listen(kKey('users'), val => { if(val) users = val; }),
     DB.listen(kKey('rekod_acara'), val => { if(val) rekodAcara = val; renderDashRekod(); }),
     DB.listen(kKey('tetapan'), val => {
-      if(val) { tetapan = val; if (!tetapan.kategoriUmur) tetapan.kategoriUmur = ['LA','LB','LC','PA','PB','PC']; }
+      if(val) { tetapan = val; if (!tetapan.kategoriUmur) tetapan.kategoriUmur = ['LA','LB','LC','PA','PB','PC']; if (!tetapan.hadUmur) tetapan.hadUmur = {}; }
       populateKategoriDropdowns(); updateDashboard();
     })
   );
