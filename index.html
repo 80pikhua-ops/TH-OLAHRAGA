@@ -4130,14 +4130,14 @@ function resetSemuaData() {
   athletes = []; schedules = []; results = []; pasukanEntries = []; rekodAcara = []; users = [];
   tetapan = {
     kod: '', nama: '', tarikhMula: '', tarikhTutup: '',
-    markah: {1:8,2:7,3:6,4:5,5:4},
-    topPos: 3, hadIndividu: 2, hadPasukan: 1, hadPesertaPerPasukan: 2, hadPasukanPerAcaraPasukan: 1,
+    markah: {1:5,2:3,3:2,4:1,5:0},
+    topPos: 8, hadIndividu: 3, hadPasukan: 2, hadPesertaPerPasukan: 2, hadPasukanPerAcaraPasukan: 1,
     kodLocked: false,
-    kategoriUmur: ['U12','U14','U16','U18','Terbuka'],
+    kategoriUmur: ['LA','LB','LC','PA','PB','PC'],
     sekolahPasukan: [],
     acara: DEFAULT_ACARA,
-    olahragawanKategori: [],
-    olahragawatiKategori: []
+    olahragawanKategori: ['LA','LB','LC'],
+    olahragawatiKategori: ['PA','PB','PC']
   };
   DB.set(kKey('tetapan'), tetapan);
 
@@ -4443,42 +4443,37 @@ function printPapanAwards() {
 
 // ===== TETAPAN =====
 const DEFAULT_ACARA = [
-  {nama:'100m Lelaki',jenis:'Track',penyertaan:'Individu'},{nama:'100m Perempuan',jenis:'Track',penyertaan:'Individu'},
-  {nama:'200m Lelaki',jenis:'Track',penyertaan:'Individu'},{nama:'200m Perempuan',jenis:'Track',penyertaan:'Individu'},
-  {nama:'400m Lelaki',jenis:'Track',penyertaan:'Individu'},{nama:'400m Perempuan',jenis:'Track',penyertaan:'Individu'},
-  {nama:'800m Lelaki',jenis:'Track',penyertaan:'Individu'},{nama:'800m Perempuan',jenis:'Track',penyertaan:'Individu'},
-  {nama:'1500m Lelaki',jenis:'Track',penyertaan:'Individu'},{nama:'1500m Perempuan',jenis:'Track',penyertaan:'Individu'},
-  {nama:'3000m Lelaki',jenis:'Track',penyertaan:'Individu'},{nama:'3000m Perempuan',jenis:'Track',penyertaan:'Individu'},
-  {nama:'110m Lompat Pagar Lelaki',jenis:'Track',penyertaan:'Individu'},{nama:'100m Lompat Pagar Perempuan',jenis:'Track',penyertaan:'Individu'},
-  {nama:'400m Lompat Pagar Lelaki',jenis:'Track',penyertaan:'Individu'},{nama:'400m Lompat Pagar Perempuan',jenis:'Track',penyertaan:'Individu'},
-  {nama:'4x100m Lelaki',jenis:'Track',penyertaan:'Pasukan'},{nama:'4x100m Perempuan',jenis:'Track',penyertaan:'Pasukan'},
-  {nama:'4x400m Lelaki',jenis:'Track',penyertaan:'Pasukan'},{nama:'4x400m Perempuan',jenis:'Track',penyertaan:'Pasukan'},
-  {nama:'Lompat Jauh Lelaki',jenis:'Field',penyertaan:'Individu'},{nama:'Lompat Jauh Perempuan',jenis:'Field',penyertaan:'Individu'},
-  {nama:'Lompat Tinggi Lelaki',jenis:'Field',penyertaan:'Individu'},{nama:'Lompat Tinggi Perempuan',jenis:'Field',penyertaan:'Individu'},
-  {nama:'Lompat Kijang Lelaki',jenis:'Field',penyertaan:'Individu'},{nama:'Lompat Kijang Perempuan',jenis:'Field',penyertaan:'Individu'},
-  {nama:'Rejam Peluru Lelaki',jenis:'Field',penyertaan:'Individu'},{nama:'Rejam Peluru Perempuan',jenis:'Field',penyertaan:'Individu'},
-  {nama:'Lontar Cakera Lelaki',jenis:'Field',penyertaan:'Individu'},{nama:'Lontar Cakera Perempuan',jenis:'Field',penyertaan:'Individu'},
-  {nama:'Lempar Lembing Lelaki',jenis:'Field',penyertaan:'Individu'},{nama:'Lempar Lembing Perempuan',jenis:'Field',penyertaan:'Individu'},
-  {nama:'Lompat Bergalah Lelaki',jenis:'Field',penyertaan:'Individu'},{nama:'Lompat Bergalah Perempuan',jenis:'Field',penyertaan:'Individu'}
+  {nama:'100m',jenis:'Track',penyertaan:'Individu'},
+  {nama:'200m',jenis:'Track',penyertaan:'Individu'},
+  {nama:'400m',jenis:'Track',penyertaan:'Individu'},
+  {nama:'800m',jenis:'Track',penyertaan:'Individu'},
+  {nama:'1500m',jenis:'Track',penyertaan:'Individu'},
+  {nama:'4x100m',jenis:'Track',penyertaan:'Pasukan'},
+  {nama:'4x400m',jenis:'Track',penyertaan:'Pasukan'},
+  {nama:'Lompat Jauh',jenis:'Field',penyertaan:'Individu'},
+  {nama:'Lompat Tinggi',jenis:'Field',penyertaan:'Individu'},
+  {nama:'Lontar Peluru',jenis:'Field',penyertaan:'Individu'},
+  {nama:'Lempar Cakera',jenis:'Field',penyertaan:'Individu'},
+  {nama:'Rejam Lembing',jenis:'Field',penyertaan:'Individu'}
 ];
 
 let adminPassCache = null;
 let tetapan = {
   kod: '', nama: '', tarikhMula: '', tarikhTutup: '',
-  markah: {1:8,2:7,3:6,4:5,5:4},
-  topPos: 3, hadIndividu: 2, hadPasukan: 1, hadPesertaPerPasukan: 2, hadPasukanPerAcaraPasukan: 1,
+  markah: {1:5,2:3,3:2,4:1,5:0},
+  topPos: 8, hadIndividu: 3, hadPasukan: 2, hadPesertaPerPasukan: 2, hadPasukanPerAcaraPasukan: 1,
   kodLocked: false,
-  kategoriUmur: ['U12','U14','U16','U18','Terbuka'],
+  kategoriUmur: ['LA','LB','LC','PA','PB','PC'],
   sekolahPasukan: [],
   acara: DEFAULT_ACARA,
-  olahragawanKategori: [],
-  olahragawatiKategori: []
+  olahragawanKategori: ['LA','LB','LC'],
+  olahragawatiKategori: ['PA','PB','PC']
 };
-if (!tetapan.kategoriUmur) tetapan.kategoriUmur = ['U12','U14','U16','U18','Terbuka'];
+if (!tetapan.kategoriUmur) tetapan.kategoriUmur = ['LA','LB','LC','PA','PB','PC'];
 if (!tetapan.sekolahPasukan) tetapan.sekolahPasukan = [];
 if (!tetapan.acara) tetapan.acara = DEFAULT_ACARA;
-if (!tetapan.olahragawanKategori) tetapan.olahragawanKategori = [];
-if (!tetapan.olahragawatiKategori) tetapan.olahragawatiKategori = [];
+if (!tetapan.olahragawanKategori) tetapan.olahragawanKategori = ['LA','LB','LC'];
+if (!tetapan.olahragawatiKategori) tetapan.olahragawatiKategori = ['PA','PB','PC'];
 tetapan.acara = tetapan.acara.map(a => ({ penyertaan: a.nama.includes('4x') ? 'Pasukan' : 'Individu', ...a }));
 
 // ===== KATEGORI =====
@@ -6698,12 +6693,12 @@ async function loadKejohananData(kod) {
   athletes = []; schedules = []; results = []; pasukanEntries = []; rekodAcara = []; users = [];
   tetapan = {
     kod: kod, nama: '', tarikhMula: '', tarikhTutup: '',
-    markah: {1:8,2:7,3:6,4:5,5:4},
-    topPos: 3, hadIndividu: 2, hadPasukan: 1, hadPesertaPerPasukan: 2, hadPasukanPerAcaraPasukan: 1,
+    markah: {1:5,2:3,3:2,4:1,5:0},
+    topPos: 8, hadIndividu: 3, hadPasukan: 2, hadPesertaPerPasukan: 2, hadPasukanPerAcaraPasukan: 1,
     kodLocked: true,
-    kategoriUmur: ['U12','U14','U16','U18','Terbuka'],
+    kategoriUmur: ['LA','LB','LC','PA','PB','PC'],
     sekolahPasukan: [], acara: DEFAULT_ACARA,
-    olahragawanKategori: [], olahragawatiKategori: []
+    olahragawanKategori: ['LA','LB','LC'], olahragawatiKategori: ['PA','PB','PC']
   };
 
   const keys = [kKey('tetapan'), kKey('athletes'), kKey('schedules'), kKey('results'),
@@ -6714,7 +6709,7 @@ async function loadKejohananData(kod) {
 
   if (savedTetapan) {
     tetapan = savedTetapan;
-    if (!tetapan.kategoriUmur) tetapan.kategoriUmur = ['U12','U14','U16','U18','Terbuka'];
+    if (!tetapan.kategoriUmur) tetapan.kategoriUmur = ['LA','LB','LC','PA','PB','PC'];
     if (!tetapan.sekolahPasukan) tetapan.sekolahPasukan = [];
     if (!tetapan.acara) tetapan.acara = DEFAULT_ACARA;
     if (!tetapan.olahragawanKategori) tetapan.olahragawanKategori = [];
@@ -6736,7 +6731,7 @@ async function loadKejohananData(kod) {
     DB.listen(kKey('users'), val => { if(val) users = val; }),
     DB.listen(kKey('rekod_acara'), val => { if(val) rekodAcara = val; renderDashRekod(); }),
     DB.listen(kKey('tetapan'), val => {
-      if(val) { tetapan = val; if (!tetapan.kategoriUmur) tetapan.kategoriUmur = ['U12','U14','U16','U18','Terbuka']; }
+      if(val) { tetapan = val; if (!tetapan.kategoriUmur) tetapan.kategoriUmur = ['LA','LB','LC','PA','PB','PC']; }
       populateKategoriDropdowns(); updateDashboard();
     })
   );
