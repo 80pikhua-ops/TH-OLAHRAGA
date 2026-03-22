@@ -4598,6 +4598,7 @@ function renderSekolahCredentials() {
               <td style="display:flex;gap:6px">
                 <button class="btn btn-outline btn-sm" onclick="resetSekolahPass('${u.id}')" title="Jana semula kata laluan">🔄</button>
                 <button class="btn btn-outline btn-sm" onclick="toggleUserActive('${u.id}');renderSekolahCredentials()" title="${u.aktif !== false ? 'Nyahaktif':'Aktifkan'}">${u.aktif !== false ? '🚫':'✅'}</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteSekolahUser('${u.id}','${s.replace(/'/g,"\\'")}')" title="Padam akaun">🗑️</button>
               </td>
             </tr>`;
           }).join('')}
@@ -4618,6 +4619,14 @@ function togglePwVis(uid, pw) {
 
 function copyToClip(text, uid) {
   navigator.clipboard.writeText(text).then(() => showAlert('✅ Kata laluan disalin ke clipboard!', 'info')).catch(() => showAlert('Salin manual: ' + text, 'info'));
+}
+
+function deleteSekolahUser(userId, sekolahNama) {
+  if (!confirm(`Padam akaun pengguna untuk "${sekolahNama}"?\n\nSekolah/pasukan ini tidak lagi boleh log masuk selepas ini.`)) return;
+  users = users.filter(u => u.id !== userId);
+  saveUsers();
+  renderSekolahCredentials();
+  showAlert(`🗑️ Akaun "${sekolahNama}" berjaya dipadamkan.`, 'info');
 }
 
 function resetSekolahPass(userId) {
