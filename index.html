@@ -420,6 +420,29 @@
       </button>
     </div>
 
+    <!-- ===== DELETE KEJOHANAN MODAL ===== -->
+    <div id="land-delete-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)">
+      <div style="background:var(--bg2);border:1px solid rgba(232,67,58,0.4);border-radius:16px;padding:28px;width:100%;max-width:420px;animation:slideUp 0.25s ease">
+        <div style="font-size:36px;text-align:center;margin-bottom:12px">🗑️</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;text-align:center;margin-bottom:6px;color:#ff7066">PADAM KEJOHANAN</div>
+        <div id="land-delete-info" style="text-align:center;font-size:15px;color:var(--muted);margin-bottom:20px;padding:10px;background:rgba(232,67,58,0.07);border:1px solid rgba(232,67,58,0.2);border-radius:8px"></div>
+        <div style="font-size:14px;color:#ff7066;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px">⚠️ Amaran</div>
+        <div style="font-size:14px;color:var(--muted);margin-bottom:18px;line-height:1.6">Tindakan ini akan memadam <strong style="color:var(--text)">semua data</strong> kejohanan ini dari Firebase termasuk peserta, keputusan, jadual dan pengguna. <strong style="color:#ff7066">Tidak boleh dibatalkan.</strong></div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+          <label style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px">Kata Laluan Pentadbir *</label>
+          <div style="position:relative">
+            <input type="password" id="land-delete-pass" placeholder="Masukkan kata laluan pentadbir..." style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:11px 40px 11px 14px;color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;outline:none" onkeydown="if(event.key==='Enter')confirmDeleteKejohanan()">
+            <button onclick="const i=document.getElementById('land-delete-pass');i.type=i.type==='password'?'text':'password'" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">👁️</button>
+          </div>
+        </div>
+        <div id="land-delete-error" style="display:none;padding:9px 13px;background:rgba(232,67,58,0.1);border:1px solid rgba(232,67,58,0.3);border-radius:8px;font-size:14px;color:#ff7066;margin-bottom:12px"></div>
+        <div style="display:flex;gap:10px">
+          <button onclick="closeDeleteModal()" style="flex:1;padding:12px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;cursor:pointer">Batal</button>
+          <button onclick="confirmDeleteKejohanan()" id="land-delete-confirm-btn" style="flex:1;padding:12px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer">🗑️ Padam</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ===== PANEL 3: PENTADBIR — TAMBAH KEJOHANAN ===== -->
     <div class="land-hero-inner" id="land-page-tambah" style="display:none">
       <button class="land-back-btn" onclick="showLandAdmin()">← Kembali</button>
@@ -5147,7 +5170,88 @@ function _buildTournamentCards(onclickFn, borderColor) {
 
 function renderLandAdminList() {
   const c = document.getElementById('land-admin-list');
-  if (c) c.innerHTML = _buildTournamentCards('selectAdminKejohanan', 'var(--gold)');
+  if (!c) return;
+  if (!tournaments || tournaments.length === 0) {
+    c.innerHTML = `<div class="land-empty"><div style="font-size:40px;opacity:0.3;margin-bottom:10px">🏟️</div><div style="font-size:16px;color:var(--muted)">Tiada kejohanan berdaftar lagi</div></div>`;
+    return;
+  }
+  const today = new Date(); today.setHours(0,0,0,0);
+  c.innerHTML = tournaments.map((t, i) => {
+    const tarikhMula = t.tarikhMula ? new Date(t.tarikhMula).toLocaleDateString('ms-MY',{day:'numeric',month:'long',year:'numeric'}) : '-';
+    const tarikhTutup = t.tarikhTutup ? new Date(t.tarikhTutup).toLocaleDateString('ms-MY',{day:'numeric',month:'short'}) : '-';
+    const tMula = t.tarikhMula ? new Date(t.tarikhMula) : null;
+    const tTutup = t.tarikhTutup ? new Date(t.tarikhTutup) : null;
+    let statusBadge = '';
+    if (tTutup && today > tTutup) statusBadge = '<span class="badge badge-red" style="font-size:13px">Tutup</span>';
+    else if (tTutup && today <= tTutup) statusBadge = '<span class="badge badge-green" style="font-size:13px">Dibuka</span>';
+    if (tMula && today >= tMula) statusBadge += ' <span class="badge badge-gold" style="font-size:13px">Berlangsung</span>';
+    return `<div style="position:relative;margin-bottom:10px">
+      <div class="land-tournament-card" style="border-left-color:var(--gold);padding-right:52px" onclick="selectAdminKejohanan(${i})">
+        <div class="t-kod">${t.kod}</div>
+        <div style="flex:1">
+          <div class="t-nama">${t.nama || 'Kejohanan Olahraga'}</div>
+          <div class="t-meta">📅 ${tarikhMula} &nbsp;·&nbsp; 🚫 ${tarikhTutup}</div>
+          <div style="margin-top:5px;display:flex;gap:5px;flex-wrap:wrap">${statusBadge}</div>
+        </div>
+        <div style="color:var(--muted);font-size:20px">›</div>
+      </div>
+      <button onclick="event.stopPropagation();showDeleteKejohanan(${i})" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(232,67,58,0.12);border:1px solid rgba(232,67,58,0.35);color:#ff7066;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center" title="Padam Kejohanan">🗑️</button>
+    </div>`;
+  }).join('');
+}
+
+// ===== DELETE KEJOHANAN =====
+let _deleteKejIdx = -1;
+
+function showDeleteKejohanan(idx) {
+  _deleteKejIdx = idx;
+  const t = tournaments[idx];
+  if (!t) return;
+  const info = document.getElementById('land-delete-info');
+  if (info) info.innerHTML = `<strong style="color:var(--text);font-size:16px">${t.nama || 'Kejohanan Olahraga'}</strong><br><span style="color:var(--gold);font-weight:700">${t.kod}</span>`;
+  document.getElementById('land-delete-pass').value = '';
+  document.getElementById('land-delete-error').style.display = 'none';
+  const btn = document.getElementById('land-delete-confirm-btn');
+  if (btn) { btn.textContent = '🗑️ Padam'; btn.disabled = false; }
+  document.getElementById('land-delete-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('land-delete-pass').focus(), 100);
+}
+
+function closeDeleteModal() {
+  document.getElementById('land-delete-modal').style.display = 'none';
+  document.getElementById('land-delete-pass').value = '';
+  document.getElementById('land-delete-error').style.display = 'none';
+  _deleteKejIdx = -1;
+}
+
+async function confirmDeleteKejohanan() {
+  const pass = document.getElementById('land-delete-pass').value;
+  const errEl = document.getElementById('land-delete-error');
+  const btn = document.getElementById('land-delete-confirm-btn');
+  errEl.style.display = 'none';
+
+  if (!pass) { errEl.textContent = '❌ Sila masukkan kata laluan pentadbir'; errEl.style.display = 'block'; return; }
+  if (pass !== getAdminPass()) { errEl.textContent = '❌ Kata laluan pentadbir tidak sah'; errEl.style.display = 'block'; document.getElementById('land-delete-pass').value = ''; return; }
+
+  const t = tournaments[_deleteKejIdx];
+  if (!t) { closeDeleteModal(); return; }
+
+  btn.textContent = '⏳ Memadamkan...'; btn.disabled = true;
+
+  // Delete all Firebase keys for this tournament
+  const dataKeys = ['tetapan','athletes','schedules','results','pasukan_entries','rekod_acara','users'];
+  const savedKej = currentKej;
+  currentKej = t.kod;
+  dataKeys.forEach(k => DB.remove(kKey(k)));
+  currentKej = savedKej;
+
+  // Remove from tournaments list
+  tournaments.splice(_deleteKejIdx, 1);
+  saveTournamentsList();
+
+  closeDeleteModal();
+  renderLandAdminList();
+  showAlert(`🗑️ Kejohanan "${t.kod}" berjaya dipadamkan.`, 'info');
 }
 function renderLandTetamuList() {
   const c = document.getElementById('land-tetamu-list');
