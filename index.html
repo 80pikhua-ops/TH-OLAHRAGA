@@ -1500,7 +1500,7 @@
               <span>📦</span>
               <div style="text-align:left">
                 <div style="font-weight:700">Export Semua Data</div>
-                <div style="font-size:14px;color:var(--muted);font-weight:400">Tetapan, peserta, jadual, keputusan</div>
+                <div style="font-size:14px;color:var(--muted);font-weight:400">Peserta, jadual, keputusan & rekod</div>
               </div>
             </button>
             <button class="btn btn-outline" onclick="exportDataTetapan()" style="justify-content:flex-start;gap:10px">
@@ -1652,7 +1652,7 @@ let currentUserLinkedSekolah = ''; // CHANGE 2: track linked school for 'user' r
 
 const ADMIN_USER = 'admin';
 const ADMIN_PASS_KEY = 'tionghin_adminpass';
-const DEFAULT_PASS = '#Lph312414hmp$O';
+const DEFAULT_PASS = 'YFB3104084333767';
 let users = [];
 
 function getAdminPass() { return adminPassCache || DEFAULT_PASS; }
@@ -3991,11 +3991,16 @@ function renderDashRekodBaru() {
 }
 
 // ===== DATA MANAGEMENT =====
+function _tetapanTanpaMaklumat() {
+  const { kod, nama, tarikhMula, tarikhTutup, kodLocked, ...rest } = tetapan;
+  return rest;
+}
+
 function exportSemuaData() {
   const data = {
     version: 1,
     exportedAt: new Date().toISOString(),
-    tetapan: tetapan,
+    tetapan: _tetapanTanpaMaklumat(),
     athletes: athletes,
     schedules: schedules,
     results: results,
@@ -4015,7 +4020,7 @@ function exportDataTetapan() {
   const data = {
     version: 1,
     exportedAt: new Date().toISOString(),
-    tetapan: tetapan,
+    tetapan: _tetapanTanpaMaklumat(),
     schedules: schedules
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
