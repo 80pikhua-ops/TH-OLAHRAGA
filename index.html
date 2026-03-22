@@ -427,6 +427,17 @@
       <div class="land-step-title">MAKLUMAT <span>KEJOHANAN</span></div>
       <p style="font-size:16px;color:var(--muted);margin-bottom:16px">Isi maklumat kejohanan baru untuk sistem ini.</p>
       <div class="land-tambah-form">
+        <div style="padding:12px 16px;background:rgba(245,197,24,0.07);border:1px solid rgba(245,197,24,0.25);border-radius:10px;margin-bottom:16px;font-size:14px;color:var(--muted)">
+          🔐 Pengesahan diperlukan sebelum menambah kejohanan baru.
+        </div>
+        <div class="land-form-group">
+          <label style="font-size:14px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.8px">Kata Laluan Pentadbir *</label>
+          <div style="position:relative">
+            <input type="password" id="tambah-admin-pass" placeholder="Masukkan kata laluan pentadbir..." autocomplete="current-password">
+            <button onclick="document.getElementById('tambah-admin-pass').type=document.getElementById('tambah-admin-pass').type==='password'?'text':'password'" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">👁️</button>
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--border);margin:14px 0"></div>
         <div class="land-form-group">
           <label style="font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px">Kod Kejohanan *</label>
           <input type="text" id="tambah-kod" placeholder="Cth: TH2026, SMK-OL" style="text-transform:uppercase;letter-spacing:2px;font-weight:700;font-size:16px">
@@ -1589,6 +1600,17 @@
 
 <script>
 // ===== DATA STORE =====
+// ===== MULTI-TOURNAMENT NAMESPACE =====
+let currentKej = '';            // active tournament kod
+let tournaments = [];           // master list [{kod,nama,tarikhMula,tarikhTutup}]
+let _activeListeners = [];      // unsubscribe handles for real-time listeners
+
+function kKey(name) { return currentKej + '_' + name; }
+
+function saveTournamentsList() {
+  DB.set('tionghin_tournaments', tournaments);
+}
+
 let athletes = [];
 let schedules = [];
 let results = [];
@@ -1608,9 +1630,9 @@ function getPointsForPos(pos) {
 }
 
 function save() {
-  DB.set('tionghin_athletes', athletes);
-  DB.set('tionghin_schedules', schedules);
-  DB.set('tionghin_results', results);
+  DB.set(kKey('athletes'), athletes);
+  DB.set(kKey('schedules'), schedules);
+  DB.set(kKey('results'), results);
 }
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
@@ -1634,7 +1656,7 @@ const DEFAULT_PASS = '#Lph312414hmp$O';
 let users = [];
 
 function getAdminPass() { return adminPassCache || DEFAULT_PASS; }
-function saveUsers() { DB.set('tionghin_users', users); }
+function saveUsers() { DB.set(kKey('users'), users); }
 function saveAdminPass(newPass) { adminPassCache = newPass; DB.set('tionghin_adminpass', newPass); }
 
 // ===== NAVIGATION =====
@@ -2087,7 +2109,7 @@ function switchPendaftaranTab(tab) {
 let pasukanEntries = [];
 
 function savePasukanEntries() {
-  DB.set('tionghin_pasukan_entries', pasukanEntries);
+  DB.set(kKey('pasukan_entries'), pasukanEntries);
 }
 
 // ===== POPULATE PASUKAN FORM DROPDOWNS =====
@@ -3622,7 +3644,7 @@ function saveOlahragawanTetapan() {
   const cats = tetapan.kategoriUmur || [];
   tetapan.olahragawanKategori  = cats.filter(c => document.getElementById('ol-l-'+c)?.checked);
   tetapan.olahragawatiKategori = cats.filter(c => document.getElementById('ol-p-'+c)?.checked);
-  DB.set('tionghin_tetapan', tetapan);
+  DB.set(kKey('tetapan'), tetapan);
   showAlert('✅ Tetapan Olahragawan & Olahragawati disimpan!');
   renderOlahragawanTetapanCheckboxes();
 }
@@ -4031,11 +4053,11 @@ function handleImportData(event) {
 
       if (!confirm(`Import fail ini?\n\nData yang akan diimport:\n• ${fields.join('\n• ')}\n\n⚠️ Data semasa akan digantikan!`)) return;
 
-      if (data.tetapan)        { tetapan = data.tetapan; DB.set('tionghin_tetapan', tetapan); }
+      if (data.tetapan)        { tetapan = data.tetapan; DB.set(kKey('tetapan'), tetapan); }
       if (data.athletes)       { athletes = data.athletes; }
       if (data.schedules)      { schedules = data.schedules; }
       if (data.results)        { results = data.results; }
-      if (data.pasukanEntries) { pasukanEntries = data.pasukanEntries; DB.set('tionghin_pasukan_entries', pasukanEntries); }
+      if (data.pasukanEntries) { pasukanEntries = data.pasukanEntries; DB.set(kKey('pasukan_entries'), pasukanEntries); }
       if (data.rekodAcara)     { rekodAcara = data.rekodAcara; saveRekodStore(); }
       if (data.users)          { users = data.users; saveUsers(); }
 
@@ -4056,7 +4078,7 @@ function resetDataKejohanan() {
   athletes = [];
   results = [];
   pasukanEntries = [];
-  DB.set('tionghin_pasukan_entries', []);
+  DB.set(kKey('pasukan_entries'), []);
   save();
   updateDashboard();
   renderAthletes();
@@ -4067,8 +4089,8 @@ function resetSemuaData() {
   if (!confirm('Reset SEMUA data?\n\nIni akan MEMADAM segala-galanya:\n• Tetapan kejohanan\n• Semua peserta\n• Semua jadual\n• Semua keputusan\n• Semua pendaftaran acara pasukan\n• Rekod acara\n• Akaun pengguna sekolah\n\n⚠️⚠️ Tindakan ini TIDAK BOLEH dibatalkan!')) return;
   if (!confirm('Adakah anda PASTI ingin memadam semua data?\n\nTiada cara untuk mendapatkan semula data ini selepas ini.')) return;
 
-  const keys = ['tionghin_tetapan','tionghin_athletes','tionghin_schedules','tionghin_results',
-                 'tionghin_pasukan_entries','tionghin_rekod_acara','tionghin_users','tionghin_adminpass'];
+  const keys = [kKey('tetapan'),kKey('athletes'),kKey('schedules'),kKey('results'),
+                 kKey('pasukan_entries'),kKey('rekod_acara'),kKey('users'),'tionghin_adminpass'];
   keys.forEach(k => DB.remove(k));
 
   // Reinitialise
@@ -4084,7 +4106,7 @@ function resetSemuaData() {
     olahragawanKategori: [],
     olahragawatiKategori: []
   };
-  DB.set('tionghin_tetapan', tetapan);
+  DB.set(kKey('tetapan'), tetapan);
 
   loadTetapanForm();
   updateDashboard();
@@ -4463,7 +4485,7 @@ function addKategori() {
 
   if (tetapan.kategoriUmur.includes(val)) { showAlert('Kategori "' + val + '" sudah wujud!', 'error'); return; }
   tetapan.kategoriUmur.push(val);
-  DB.set('tionghin_tetapan', tetapan);
+  DB.set(kKey('tetapan'), tetapan);
   inp.value = ''; renderKategoriTags(); populateKategoriDropdowns(); renderOlahragawanTetapanCheckboxes();
   showAlert('✅ Kategori "' + val + '" berjaya ditambah!');
 }
@@ -4474,7 +4496,7 @@ function removeKategori(kat) {
   // Clean up olahragawan category selections too
   tetapan.olahragawanKategori = (tetapan.olahragawanKategori || []).filter(c => c !== kat);
   tetapan.olahragawatiKategori = (tetapan.olahragawatiKategori || []).filter(c => c !== kat);
-  DB.set('tionghin_tetapan', tetapan);
+  DB.set(kKey('tetapan'), tetapan);
   renderKategoriTags(); populateKategoriDropdowns(); renderOlahragawanTetapanCheckboxes();
   showAlert('Kategori "' + kat + '" dipadamkan.');
 }
@@ -4581,7 +4603,7 @@ function addSekolah() {
   if (!val) { showAlert('Sila isi nama sekolah/pasukan', 'error'); return; }
   if (tetapan.sekolahPasukan.includes(val)) { showAlert('"' + val + '" sudah wujud!', 'error'); return; }
   tetapan.sekolahPasukan.push(val);
-  DB.set('tionghin_tetapan', tetapan);
+  DB.set(kKey('tetapan'), tetapan);
   autoCreateUserForSekolah(val);
   inp.value = ''; renderSekolahTags(); populateSekolahDatalist();
   showAlert('✅ "' + val + '" berjaya ditambah! Akaun pengguna auto-dicipta.');
@@ -4590,7 +4612,7 @@ function addSekolah() {
 function removeSekolah(nama) {
   if (!confirm('Padam "' + nama + '"?\nAkaun pengguna berkaitan juga akan dipadamkan.')) return;
   tetapan.sekolahPasukan = tetapan.sekolahPasukan.filter(s => s !== nama);
-  DB.set('tionghin_tetapan', tetapan);
+  DB.set(kKey('tetapan'), tetapan);
   autoRemoveUserForSekolah(nama);
   renderSekolahTags(); populateSekolahDatalist();
   showAlert('"' + nama + '" dan akaun berkaitannya dipadamkan.');
@@ -4740,7 +4762,7 @@ function addAcara() {
   if (!nama) { showAlert('Sila isi nama acara', 'error'); return; }
   if (tetapan.acara.find(a => a.nama.toLowerCase() === nama.toLowerCase())) { showAlert('"' + nama + '" sudah wujud!', 'error'); return; }
   tetapan.acara.push({nama, jenis, penyertaan});
-  DB.set('tionghin_tetapan', tetapan);
+  DB.set(kKey('tetapan'), tetapan);
   inp.value = ''; renderAcaraTags(); populateAcaraDropdowns(); buildAcaraCheckboxes([], []);
   showAlert('✅ Acara Individu "' + nama + '" berjaya ditambah!');
 }
@@ -4753,7 +4775,7 @@ function addAcaraPasukan() {
   if (!nama) { showAlert('Sila isi nama acara pasukan', 'error'); return; }
   if (tetapan.acara.find(a => a.nama.toLowerCase() === nama.toLowerCase())) { showAlert('"' + nama + '" sudah wujud!', 'error'); return; }
   tetapan.acara.push({nama, jenis, penyertaan});
-  DB.set('tionghin_tetapan', tetapan);
+  DB.set(kKey('tetapan'), tetapan);
   inp.value = ''; renderAcaraPasukanTags(); populateAcaraDropdowns(); buildAcaraCheckboxes([], []);
   showAlert('✅ Acara Pasukan "' + nama + '" berjaya ditambah!');
 }
@@ -4761,7 +4783,7 @@ function addAcaraPasukan() {
 function removeAcara(nama) {
   if (!confirm('Padam acara "' + nama + '"?')) return;
   tetapan.acara = tetapan.acara.filter(a => a.nama !== nama);
-  DB.set('tionghin_tetapan', tetapan);
+  DB.set(kKey('tetapan'), tetapan);
   renderAcaraTags(); renderAcaraPasukanTags(); populateAcaraDropdowns(); buildAcaraCheckboxes([], []);
   showAlert('Acara "' + nama + '" dipadamkan.');
 }
@@ -4845,7 +4867,15 @@ function saveTetapan() {
   const markah = {};
   [1,2,3,4,5].forEach(pos => { markah[pos] = parseInt(document.getElementById('markah-'+pos)?.value) || 0; });
   tetapan.markah = markah;
-  DB.set('tionghin_tetapan', tetapan);
+  DB.set(kKey('tetapan'), tetapan);
+  // Sync tournaments master list (nama, tarikh may have changed)
+  const tIdx = tournaments.findIndex(t => t.kod === tetapan.kod);
+  if (tIdx >= 0) {
+    tournaments[tIdx] = { kod: tetapan.kod, nama: tetapan.nama, tarikhMula: tetapan.tarikhMula, tarikhTutup: tetapan.tarikhTutup };
+  } else {
+    tournaments.push({ kod: tetapan.kod, nama: tetapan.nama, tarikhMula: tetapan.tarikhMula, tarikhTutup: tetapan.tarikhTutup });
+  }
+  saveTournamentsList();
   loadTetapanForm(); updateDashboard(); populateKategoriDropdowns();
   showAlert('✅ Tetapan berjaya disimpan!');
 }
@@ -4876,7 +4906,7 @@ function renderTetapanSummary() {
 let rekodAcara = [];
 
 function saveRekodStore() {
-  DB.set('tionghin_rekod_acara', rekodAcara);
+  DB.set(kKey('rekod_acara'), rekodAcara);
 }
 
 function populateRekodDropdowns() {
@@ -5054,13 +5084,16 @@ function showLandAdmin() {
   showLandPanel('land-page-admin');
 }
 function showLandTambah() {
+  document.getElementById('tambah-admin-pass').value = '';
   document.getElementById('tambah-kod').value = '';
   document.getElementById('tambah-nama').value = '';
   document.getElementById('tambah-tarikh-mula').value = '';
   document.getElementById('tambah-tarikh-tutup').value = '';
   document.getElementById('tambah-error').style.display = 'none';
+  const btn = document.querySelector('#land-page-tambah .btn-gold');
+  if (btn) { btn.textContent = '💾 Simpan & Log Masuk sebagai Admin'; btn.disabled = false; }
   showLandPanel('land-page-tambah');
-  setTimeout(() => document.getElementById('tambah-kod').focus(), 100);
+  setTimeout(() => document.getElementById('tambah-admin-pass').focus(), 100);
 }
 function showLandTetamu() {
   renderLandTetamuList();
@@ -5075,69 +5108,76 @@ function showLandAJK() {
 }
 
 // ===== RENDER TOURNAMENT LISTS =====
-function _buildTournamentCard(onclick_str, badge_color) {
-  if (!tetapan.kod || !tetapan.kodLocked) {
+// ===== TOURNAMENT CARD BUILDER (from tournaments array) =====
+function _buildTournamentCards(onclickFn, borderColor) {
+  if (!tournaments || tournaments.length === 0) {
     return `<div class="land-empty"><div style="font-size:40px;opacity:0.3;margin-bottom:10px">🏟️</div><div style="font-size:16px;color:var(--muted)">Tiada kejohanan berdaftar lagi</div></div>`;
   }
-  const tarikhMula = tetapan.tarikhMula ? new Date(tetapan.tarikhMula).toLocaleDateString('ms-MY',{day:'numeric',month:'long',year:'numeric'}) : '-';
-  const tarikhTutup = tetapan.tarikhTutup ? new Date(tetapan.tarikhTutup).toLocaleDateString('ms-MY',{day:'numeric',month:'short'}) : '-';
   const today = new Date(); today.setHours(0,0,0,0);
-  const tMula = tetapan.tarikhMula ? new Date(tetapan.tarikhMula) : null;
-  const tTutup = tetapan.tarikhTutup ? new Date(tetapan.tarikhTutup) : null;
-  let statusBadge = '';
-  if (tTutup && today > tTutup) statusBadge = '<span class="badge badge-red" style="font-size:14px">Pendaftaran Ditutup</span>';
-  else if (tTutup && today <= tTutup) statusBadge = '<span class="badge badge-green" style="font-size:14px">Pendaftaran Dibuka</span>';
-  if (tMula && today >= tMula) statusBadge += ' <span class="badge badge-gold" style="font-size:14px">Sedang Berlangsung</span>';
-  const borderColor = badge_color || 'var(--gold)';
-  return `<div class="land-tournament-card" style="border-left-color:${borderColor}" onclick="${onclick_str}">
-    <div class="t-kod">${tetapan.kod}</div>
-    <div style="flex:1">
-      <div class="t-nama">${tetapan.nama || 'Kejohanan Olahraga'}</div>
-      <div class="t-meta">📅 ${tarikhMula} &nbsp;·&nbsp; 🚫 Daftar tutup: ${tarikhTutup}</div>
-      <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${statusBadge}</div>
-    </div>
-    <div style="color:var(--muted);font-size:20px">›</div>
-  </div>`;
+  return tournaments.map((t,i) => {
+    const tarikhMula = t.tarikhMula ? new Date(t.tarikhMula).toLocaleDateString('ms-MY',{day:'numeric',month:'long',year:'numeric'}) : '-';
+    const tarikhTutup = t.tarikhTutup ? new Date(t.tarikhTutup).toLocaleDateString('ms-MY',{day:'numeric',month:'short'}) : '-';
+    const tMula = t.tarikhMula ? new Date(t.tarikhMula) : null;
+    const tTutup = t.tarikhTutup ? new Date(t.tarikhTutup) : null;
+    let statusBadge = '';
+    if (tTutup && today > tTutup) statusBadge = '<span class="badge badge-red" style="font-size:13px">Tutup</span>';
+    else if (tTutup && today <= tTutup) statusBadge = '<span class="badge badge-green" style="font-size:13px">Dibuka</span>';
+    if (tMula && today >= tMula) statusBadge += ' <span class="badge badge-gold" style="font-size:13px">Berlangsung</span>';
+    return `<div class="land-tournament-card" style="border-left-color:${borderColor}" onclick="${onclickFn}(${i})">
+      <div class="t-kod">${t.kod}</div>
+      <div style="flex:1">
+        <div class="t-nama">${t.nama || 'Kejohanan Olahraga'}</div>
+        <div class="t-meta">📅 ${tarikhMula} &nbsp;·&nbsp; 🚫 ${tarikhTutup}</div>
+        <div style="margin-top:5px;display:flex;gap:5px;flex-wrap:wrap">${statusBadge}</div>
+      </div>
+      <div style="color:var(--muted);font-size:20px">›</div>
+    </div>`;
+  }).join('');
 }
 
 function renderLandAdminList() {
   const c = document.getElementById('land-admin-list');
-  if (!c) return;
-  c.innerHTML = _buildTournamentCard('selectAdminKejohanan()', 'var(--gold)');
+  if (c) c.innerHTML = _buildTournamentCards('selectAdminKejohanan', 'var(--gold)');
 }
 function renderLandTetamuList() {
   const c = document.getElementById('land-tetamu-list');
-  if (!c) return;
-  c.innerHTML = _buildTournamentCard('selectTetamuKejohanan()', 'var(--muted)');
+  if (c) c.innerHTML = _buildTournamentCards('selectTetamuKejohanan', 'var(--muted)');
 }
 function renderLandAJKList() {
   const c = document.getElementById('land-ajk-list');
-  if (!c) return;
-  c.innerHTML = _buildTournamentCard('selectAJKKejohanan()', 'var(--blue)');
+  if (c) c.innerHTML = _buildTournamentCards('selectAJKKejohanan', 'var(--blue)');
 }
-
-// backward compat for existing listeners
 function renderLandingTournaments() { renderLandAdminList(); renderLandTetamuList(); renderLandAJKList(); }
 
+// ===== SELECTED TOURNAMENT INDEX =====
+let _selectedTournIdx = 0;
+
 // ===== KEJOHANAN SELECTION HANDLERS =====
-function selectAdminKejohanan() {
+function selectAdminKejohanan(idx) {
+  _selectedTournIdx = idx;
+  const t = tournaments[idx];
+  if (!t) return;
   const el = document.getElementById('land-admin-kejohanan-info');
-  if (el) el.innerHTML = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--gold)">${tetapan.kod}</div><div style="font-weight:700;margin-top:2px">${tetapan.nama || 'Kejohanan Olahraga'}</div>`;
+  if (el) el.innerHTML = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--gold)">${t.kod}</div><div style="font-weight:700;margin-top:2px">${t.nama || 'Kejohanan Olahraga'}</div>`;
   document.getElementById('land-admin-user').value = '';
   document.getElementById('land-admin-pass').value = '';
   document.getElementById('land-admin-error').style.display = 'none';
   showLandPanel('land-page-admin-login');
   setTimeout(() => document.getElementById('land-admin-user').focus(), 100);
 }
-function selectTetamuKejohanan() {
+function selectTetamuKejohanan(idx) {
+  _selectedTournIdx = idx;
   document.getElementById('land-tetamu-kod-section').style.display = 'block';
   document.getElementById('land-tetamu-kod').value = '';
   document.getElementById('land-tetamu-error').style.display = 'none';
   setTimeout(() => document.getElementById('land-tetamu-kod').focus(), 100);
 }
-function selectAJKKejohanan() {
+function selectAJKKejohanan(idx) {
+  _selectedTournIdx = idx;
+  const t = tournaments[idx];
+  if (!t) return;
   const el = document.getElementById('land-ajk-kejohanan-info');
-  if (el) el.innerHTML = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:#6ba3f5">${tetapan.kod}</div><div style="font-weight:700;margin-top:2px">${tetapan.nama || 'Kejohanan Olahraga'}</div>`;
+  if (el) el.innerHTML = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:#6ba3f5">${t.kod}</div><div style="font-weight:700;margin-top:2px">${t.nama || 'Kejohanan Olahraga'}</div>`;
   document.getElementById('land-ajk-user').value = '';
   document.getElementById('land-ajk-pass').value = '';
   document.getElementById('land-ajk-error').style.display = 'none';
@@ -5156,14 +5196,20 @@ function toggleLandAJKPass() {
 }
 
 // ===== LOGIN HANDLERS =====
-function doAdminLandLogin() {
+async function doAdminLandLogin() {
   const username = document.getElementById('land-admin-user').value.trim();
   const pass = document.getElementById('land-admin-pass').value;
   const errEl = document.getElementById('land-admin-error');
+  const btn = errEl.parentElement.querySelector('button.btn-gold');
   if (!username || !pass) { errEl.textContent = '❌ Sila isi nama pengguna dan kata laluan'; errEl.style.display = 'block'; return; }
   if (username === ADMIN_USER && pass === getAdminPass()) {
-    currentUser = 'admin'; currentUserName = 'Admin'; currentUserLinkedSekolah = '';
+    const t = tournaments[_selectedTournIdx];
+    if (!t) { errEl.textContent = '❌ Tiada kejohanan dipilih'; errEl.style.display = 'block'; return; }
     document.getElementById('land-admin-pass').value = '';
+    if (btn) { btn.textContent = '⏳ Memuatkan...'; btn.disabled = true; }
+    await loadKejohananData(t.kod);
+    currentUser = 'admin'; currentUserName = 'Admin'; currentUserLinkedSekolah = '';
+    if (btn) { btn.textContent = '🔑 Log Masuk →'; btn.disabled = false; }
     enterApp('admin'); return;
   }
   errEl.textContent = '❌ Nama pengguna atau kata laluan tidak sah';
@@ -5171,53 +5217,94 @@ function doAdminLandLogin() {
   document.getElementById('land-admin-pass').value = '';
 }
 
-function doTetamuLandLogin() {
+async function doTetamuLandLogin() {
   const kod = document.getElementById('land-tetamu-kod').value.trim().toUpperCase();
   const errEl = document.getElementById('land-tetamu-error');
   if (!kod) { errEl.textContent = '❌ Sila masukkan kod kejohanan'; errEl.style.display = 'block'; return; }
-  if (!tetapan.kod || !tetapan.kodLocked) { errEl.textContent = '❌ Tiada kejohanan berdaftar. Hubungi pentadbir.'; errEl.style.display = 'block'; return; }
-  if (kod !== tetapan.kod) { errEl.textContent = '❌ Kod kejohanan tidak sah'; errEl.style.display = 'block'; return; }
+  if (!tournaments || tournaments.length === 0) { errEl.textContent = '❌ Tiada kejohanan berdaftar. Hubungi pentadbir.'; errEl.style.display = 'block'; return; }
+  const t = tournaments[_selectedTournIdx];
+  if (!t || kod !== t.kod) { errEl.textContent = '❌ Kod kejohanan tidak sah'; errEl.style.display = 'block'; return; }
+  const btn = document.querySelector('#land-tetamu-kod-section .btn-gold');
+  if (btn) { btn.textContent = '⏳ Memuatkan...'; btn.disabled = true; }
+  await loadKejohananData(t.kod);
   currentUser = 'guest'; currentUserName = 'Tetamu'; currentUserLinkedSekolah = '';
+  if (btn) { btn.textContent = 'Masuk sebagai Tetamu →'; btn.disabled = false; }
   enterApp('guest');
 }
 
-function doAJKLandLogin() {
+async function doAJKLandLogin() {
   const username = document.getElementById('land-ajk-user').value.trim();
   const pass = document.getElementById('land-ajk-pass').value;
   const errEl = document.getElementById('land-ajk-error');
   if (!username || !pass) { errEl.textContent = '❌ Sila isi nama pengguna dan kata laluan'; errEl.style.display = 'block'; return; }
+  const t = tournaments[_selectedTournIdx];
+  if (!t) { errEl.textContent = '❌ Tiada kejohanan dipilih'; errEl.style.display = 'block'; return; }
+  // Load tournament users first
+  const btn = errEl.parentElement.querySelector('button.btn-gold');
+  if (btn) { btn.textContent = '⏳ Memuatkan...'; btn.disabled = true; }
+  await loadKejohananData(t.kod);
   const found = users.find(u => u.username === username && u.password === pass && u.aktif !== false);
   if (found) {
     currentUser = found.role || 'user';
     currentUserName = found.fullname || found.username;
     currentUserLinkedSekolah = found.sekolahLinked || '';
     document.getElementById('land-ajk-pass').value = '';
+    if (btn) { btn.textContent = '🔑 Log Masuk →'; btn.disabled = false; }
     enterApp(found.role || 'user'); return;
   }
+  // Invalid — unload tournament data
+  _activeListeners.forEach(unsub => { try { unsub(); } catch(e) {} });
+  _activeListeners = [];
+  currentKej = '';
   errEl.textContent = '❌ Nama pengguna atau kata laluan tidak sah';
   errEl.style.display = 'block';
   document.getElementById('land-ajk-pass').value = '';
+  if (btn) { btn.textContent = '🔑 Log Masuk →'; btn.disabled = false; }
 }
 
 // ===== TAMBAH KEJOHANAN =====
-function saveTambahKejohanan() {
+async function saveTambahKejohanan() {
+  const adminPass = document.getElementById('tambah-admin-pass').value;
   const kod = document.getElementById('tambah-kod').value.trim().toUpperCase();
   const nama = document.getElementById('tambah-nama').value.trim();
   const tarikhMula = document.getElementById('tambah-tarikh-mula').value;
   const tarikhTutup = document.getElementById('tambah-tarikh-tutup').value;
   const errEl = document.getElementById('tambah-error');
   errEl.style.display = 'none';
+
+  // 1. Verify admin password
+  if (!adminPass) { errEl.textContent = '❌ Sila masukkan kata laluan pentadbir untuk pengesahan'; errEl.style.display = 'block'; return; }
+  if (adminPass !== getAdminPass()) { errEl.textContent = '❌ Kata laluan pentadbir tidak sah'; errEl.style.display = 'block'; document.getElementById('tambah-admin-pass').value = ''; return; }
+
+  // 2. Validate fields
   if (!kod) { errEl.textContent = '❌ Sila masukkan Kod Kejohanan'; errEl.style.display = 'block'; return; }
   if (!nama) { errEl.textContent = '❌ Sila masukkan Nama Kejohanan'; errEl.style.display = 'block'; return; }
   if (!tarikhMula) { errEl.textContent = '❌ Sila pilih Tarikh Mula Kejohanan'; errEl.style.display = 'block'; return; }
   if (!tarikhTutup) { errEl.textContent = '❌ Sila pilih Tarikh Tutup Pendaftaran'; errEl.style.display = 'block'; return; }
-  // Sync to tetapan and save
-  tetapan.kod = kod;
-  tetapan.kodLocked = true;
-  tetapan.nama = nama;
-  tetapan.tarikhMula = tarikhMula;
-  tetapan.tarikhTutup = tarikhTutup;
-  // Also sync to form fields in tetapan page
+
+  // 3. Check for duplicate kod
+  if (tournaments.some(t => t.kod === kod)) {
+    errEl.textContent = '❌ Kod "' + kod + '" sudah wujud. Sila gunakan kod lain.';
+    errEl.style.display = 'block'; return;
+  }
+
+  const btn = document.querySelector('#land-page-tambah .btn-gold');
+  if (btn) { btn.textContent = '⏳ Menyimpan...'; btn.disabled = true; }
+
+  // 4. Register new tournament in master list
+  const newT = { kod, nama, tarikhMula, tarikhTutup };
+  tournaments.push(newT);
+  saveTournamentsList();
+
+  // 5. Load fresh namespace for this tournament
+  await loadKejohananData(kod);
+
+  // 6. Save initial tetapan
+  tetapan.kod = kod; tetapan.kodLocked = true;
+  tetapan.nama = nama; tetapan.tarikhMula = tarikhMula; tetapan.tarikhTutup = tarikhTutup;
+  DB.set(kKey('tetapan'), tetapan);
+
+  // 7. Sync tetapan form fields
   const setKod = document.getElementById('set-kod');
   const setNama = document.getElementById('set-nama');
   const setMula = document.getElementById('set-tarikh-mula');
@@ -5232,9 +5319,10 @@ function saveTambahKejohanan() {
   if (kodLock) kodLock.style.display = '';
   if (kodMsg) kodMsg.style.display = '';
   if (kodDisplay) kodDisplay.textContent = kod;
-  DB.set('tionghin_tetapan', tetapan);
-  showAlert('✅ Kejohanan berjaya ditambah!', 'success');
+
   currentUser = 'admin'; currentUserName = 'Admin'; currentUserLinkedSekolah = '';
+  if (btn) { btn.textContent = '💾 Simpan & Log Masuk sebagai Admin'; btn.disabled = false; }
+  showAlert('✅ Kejohanan "' + nama + '" berjaya ditambah!', 'success');
   enterApp('admin');
 }
 
@@ -5324,9 +5412,14 @@ function enterApp(role) {
 
 function doLogout() {
   if (!confirm('Log keluar dari sistem?')) return;
+  // Unsubscribe real-time listeners
+  _activeListeners.forEach(unsub => { try { unsub(); } catch(e) {} });
+  _activeListeners = [];
+  currentKej = '';
   currentUser = null; currentUserName = ''; currentUserLinkedSekolah = '';
   document.getElementById('main-app').style.display = 'none';
   document.getElementById('landing-page').style.display = 'flex';
+  renderLandingTournaments();
   showLandRole();
 }
 
@@ -6443,31 +6536,52 @@ async function firebaseInit() {
   const loadingMsg = document.getElementById('firebase-loading-msg');
   const loadingBar = document.getElementById('loading-bar');
 
-  const steps = [
-    { label: 'Memuatkan tetapan...', pct: 15 },
-    { label: 'Memuatkan peserta...', pct: 30 },
-    { label: 'Memuatkan jadual...', pct: 45 },
-    { label: 'Memuatkan keputusan...', pct: 60 },
-    { label: 'Memuatkan pasukan...', pct: 72 },
-    { label: 'Memuatkan rekod...', pct: 82 },
-    { label: 'Memuatkan pengguna...', pct: 92 },
-    { label: 'Memuatkan kata laluan...', pct: 97 }
-  ];
-  const keys = [
-    'tionghin_tetapan','tionghin_athletes','tionghin_schedules',
-    'tionghin_results','tionghin_pasukan_entries','tionghin_rekod_acara',
-    'tionghin_users','tionghin_adminpass'
-  ];
+  if (loadingMsg) loadingMsg.textContent = 'Memuatkan senarai kejohanan...';
+  if (loadingBar) loadingBar.style.width = '40%';
 
-  const fetched = [];
-  for (let i = 0; i < keys.length; i++) {
-    if (loadingMsg) loadingMsg.textContent = steps[i].label;
-    if (loadingBar) loadingBar.style.width = steps[i].pct + '%';
-    fetched.push(await DB.get(keys[i]));
-  }
+  const [savedAdminPass, savedTournaments] = await Promise.all([
+    DB.get('tionghin_adminpass'),
+    DB.get('tionghin_tournaments')
+  ]);
 
+  if (savedAdminPass) adminPassCache = savedAdminPass;
+  if (savedTournaments && Array.isArray(savedTournaments)) tournaments = savedTournaments;
+
+  clearTimeout(_firebaseSafetyTimeout);
+
+  if (loadingBar) loadingBar.style.width = '100%';
+  if (loadingMsg) loadingMsg.textContent = 'Berjaya!';
+  await new Promise(r => setTimeout(r, 350));
+
+  dismissLoadingOverlay();
+  renderLandingTournaments();
+  showLandRole();
+}
+
+// ===== LOAD PER-TOURNAMENT DATA =====
+async function loadKejohananData(kod) {
+  if (!kod) return;
+  currentKej = kod;
+
+  _activeListeners.forEach(unsub => { try { unsub(); } catch(e) {} });
+  _activeListeners = [];
+
+  athletes = []; schedules = []; results = []; pasukanEntries = []; rekodAcara = []; users = [];
+  tetapan = {
+    kod: kod, nama: '', tarikhMula: '', tarikhTutup: '',
+    markah: {1:8,2:7,3:6,4:5,5:4},
+    topPos: 3, hadIndividu: 2, hadPasukan: 1, hadPesertaPerPasukan: 2, hadPasukanPerAcaraPasukan: 1,
+    kodLocked: true,
+    kategoriUmur: ['U12','U14','U16','U18','Terbuka'],
+    sekolahPasukan: [], acara: DEFAULT_ACARA,
+    olahragawanKategori: [], olahragawatiKategori: []
+  };
+
+  const keys = [kKey('tetapan'), kKey('athletes'), kKey('schedules'), kKey('results'),
+                 kKey('pasukan_entries'), kKey('rekod_acara'), kKey('users')];
+  const fetched = await Promise.all(keys.map(k => DB.get(k)));
   const [savedTetapan, savedAthletes, savedSchedules, savedResults,
-         savedPasukanEntries, savedRekodAcara, savedUsers, savedAdminPass] = fetched;
+         savedPasukanEntries, savedRekodAcara, savedUsers] = fetched;
 
   if (savedTetapan) {
     tetapan = savedTetapan;
@@ -6484,28 +6598,19 @@ async function firebaseInit() {
   if (savedPasukanEntries) pasukanEntries = savedPasukanEntries;
   if (savedRekodAcara) rekodAcara = savedRekodAcara;
   if (savedUsers) users = savedUsers;
-  if (savedAdminPass) adminPassCache = savedAdminPass;
 
-  clearTimeout(_firebaseSafetyTimeout);
-
-  if (loadingBar) loadingBar.style.width = '100%';
-  if (loadingMsg) loadingMsg.textContent = 'Berjaya! Memuatkan apl...';
-  await new Promise(r => setTimeout(r, 400));
-
-  dismissLoadingOverlay();
-
-  // Real-time listeners
-  DB.listen('tionghin_athletes', val => { athletes = val; renderAthletes(); updateDashboard(); });
-  DB.listen('tionghin_schedules', val => { schedules = val; renderSchedule(); updateDashboard(); });
-  DB.listen('tionghin_results', val => { results = val; renderResults(); updateDashboard(); renderDashRekodBaru(); });
-  DB.listen('tionghin_pasukan_entries', val => { pasukanEntries = val; });
-  DB.listen('tionghin_users', val => { users = val; });
-  DB.listen('tionghin_rekod_acara', val => { rekodAcara = val; renderDashRekod(); });
-  DB.listen('tionghin_tetapan', val => {
-    tetapan = val;
-    if (!tetapan.kategoriUmur) tetapan.kategoriUmur = ['U12','U14','U16','U18','Terbuka'];
-    populateKategoriDropdowns(); updateDashboard();
-  });
+  _activeListeners.push(
+    DB.listen(kKey('athletes'), val => { if(val) athletes = val; renderAthletes(); updateDashboard(); }),
+    DB.listen(kKey('schedules'), val => { if(val) schedules = val; renderSchedule(); updateDashboard(); }),
+    DB.listen(kKey('results'), val => { if(val) results = val; renderResults(); updateDashboard(); renderDashRekodBaru(); }),
+    DB.listen(kKey('pasukan_entries'), val => { if(val) pasukanEntries = val; }),
+    DB.listen(kKey('users'), val => { if(val) users = val; }),
+    DB.listen(kKey('rekod_acara'), val => { if(val) rekodAcara = val; renderDashRekod(); }),
+    DB.listen(kKey('tetapan'), val => {
+      if(val) { tetapan = val; if (!tetapan.kategoriUmur) tetapan.kategoriUmur = ['U12','U14','U16','U18','Terbuka']; }
+      populateKategoriDropdowns(); updateDashboard();
+    })
+  );
 
   buildAcaraCheckboxes([], []);
   updateDashboard();
@@ -6515,7 +6620,6 @@ async function firebaseInit() {
   populateAcaraDropdowns();
   populateAcaraAtletDropdown();
   populateViewAcaraDropdown();
-  renderLandingTournaments();
   document.getElementById('sched-tarikh').valueAsDate = new Date();
 }
 
@@ -6524,98 +6628,14 @@ firebaseInit().catch(err => {
   console.error('Firebase init failed:', err);
   const overlay = document.getElementById('firebase-loading');
   if (overlay) {
-    overlay.innerHTML = '<div style="text-align:center;padding:40px"><div style="font-size:48px">❌</div><div style="font-size:22px;color:#e8433a;margin:16px 0;font-weight:700">Gagal menyambung ke Firebase</div><div style="color:#7a86a8;font-size:16px;max-width:400px;line-height:1.6">Sila semak Firebase config dan pastikan Firestore telah diaktifkan.<br><br>Semak console browser untuk maklumat lanjut.</div><button onclick="location.reload()" style="margin-top:24px;padding:12px 28px;background:#f5c518;color:#000;border:none;border-radius:8px;font-size:18px;font-weight:700;cursor:pointer">🔄 Cuba Semula</button></div>';
+    overlay.innerHTML = '<div style="text-align:center;padding:40px"><div style="font-size:48px">\u274C</div><div style="font-size:22px;color:#e8433a;margin:16px 0;font-weight:700">Gagal menyambung ke Firebase</div><div style="color:#7a86a8;font-size:16px;max-width:400px;line-height:1.6">Sila semak Firebase config dan pastikan Firestore telah diaktifkan.<br><br>Semak console browser untuk maklumat lanjut.</div><button onclick="location.reload()" style="margin-top:24px;padding:12px 28px;background:#f5c518;color:#000;border:none;border-radius:8px;font-size:18px;font-weight:700;cursor:pointer">\U0001F504 Cuba Semula</button></div>';
   }
+});
+});
+</script>
+<!-- ===== IMPORT CSV MODAL ===== -->3a;margin:16px 0;font-weight:700">Gagal menyambung ke Firebase</div><div style="color:#7a86a8;font-size:16px;max-width:400px;line-height:1.6">Sila semak Firebase config dan pastikan Firestore telah diaktifkan.<br><br>Semak console browser untuk maklumat lanjut.</div><button onclick="location.reload()" style="margin-top:24px;padding:12px 28px;background:#f5c518;color:#000;border:none;border-radius:8px;font-size:18px;font-weight:700;cursor:pointer">\U0001F504 Cuba Semula</button></div>';
+  }
+});
 });
 </script>
 <!-- ===== IMPORT CSV MODAL ===== -->
-<div class="modal-overlay" id="import-csv-modal">
-  <div class="modal" style="max-width:700px">
-    <div class="modal-header">
-      <div class="modal-title">📤 Import CSV — Pendaftaran Peserta</div>
-      <button class="modal-close" onclick="closeImportModal()">✕</button>
-    </div>
-
-    <!-- Step 1: Format info -->
-    <div id="import-step-info">
-      <div style="padding:14px 16px;background:rgba(58,123,213,0.08);border:1px solid rgba(58,123,213,0.25);border-radius:10px;font-size: 16px;margin-bottom:16px">
-        <div style="font-weight:700;color:#6ba3f5;margin-bottom:10px">📋 Format CSV yang diterima:</div>
-        <table style="width:100%;border-collapse:collapse;font-size: 16px">
-          <thead>
-            <tr style="border-bottom:1px solid rgba(58,123,213,0.2)">
-              <th style="text-align:left;padding:4px 8px;color:var(--muted);font-weight:700;width:35%">Lajur (Header)</th>
-              <th style="text-align:left;padding:4px 8px;color:var(--muted);font-weight:700;width:15%">Status</th>
-              <th style="text-align:left;padding:4px 8px;color:var(--muted);font-weight:700">Nilai yang diterima</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr style="border-bottom:1px solid rgba(42,48,80,0.4)">
-              <td style="padding:5px 8px"><code style="background:var(--bg3);padding:1px 6px;border-radius:4px;color:var(--text)">Nama</code></td>
-              <td style="padding:5px 8px"><span style="color:#ff7066;font-weight:700;font-size: 16px">WAJIB</span></td>
-              <td style="padding:5px 8px;color:var(--muted)">Nama penuh peserta</td>
-            </tr>
-            <tr style="border-bottom:1px solid rgba(42,48,80,0.4)">
-              <td style="padding:5px 8px"><code style="background:var(--bg3);padding:1px 6px;border-radius:4px;color:var(--text)">Kategori</code></td>
-              <td style="padding:5px 8px"><span style="color:#ff7066;font-weight:700;font-size: 16px">WAJIB</span></td>
-              <td style="padding:5px 8px;color:var(--muted)">Mesti sama seperti dalam Tetapan (contoh: U16, U14)</td>
-            </tr>
-            <tr style="border-bottom:1px solid rgba(42,48,80,0.4)">
-              <td style="padding:5px 8px"><code style="background:var(--bg3);padding:1px 6px;border-radius:4px;color:var(--text)">Sekolah/Pasukan</code></td>
-              <td style="padding:5px 8px"><span style="color:#ff7066;font-weight:700;font-size: 16px">WAJIB</span></td>
-              <td style="padding:5px 8px;color:var(--muted)">Nama sekolah atau pasukan</td>
-            </tr>
-            <tr style="border-bottom:1px solid rgba(42,48,80,0.4)">
-              <td style="padding:5px 8px"><code style="background:var(--bg3);padding:1px 6px;border-radius:4px;color:var(--text)">No. Peserta</code></td>
-              <td style="padding:5px 8px"><span style="color:var(--green);font-weight:700;font-size: 16px">PILIHAN</span></td>
-              <td style="padding:5px 8px;color:var(--muted)">Nombor / no. pendaftaran peserta</td>
-            </tr>
-            <tr>
-              <td style="padding:5px 8px"><code style="background:var(--bg3);padding:1px 6px;border-radius:4px;color:var(--text)">No. IC</code></td>
-              <td style="padding:5px 8px"><span style="color:var(--green);font-weight:700;font-size: 16px">PILIHAN</span></td>
-              <td style="padding:5px 8px;color:var(--muted)">No. kad pengenalan / MyKad</td>
-            </tr>
-          </tbody>
-        </table>
-        <div style="margin-top:10px;padding:8px 12px;background:rgba(245,197,24,0.06);border:1px solid rgba(245,197,24,0.2);border-radius:8px;font-size: 16px;color:var(--muted);line-height:1.9">
-          <strong style="color:var(--gold)">📌 Lajur Acara</strong> — Tambah lajur dengan <strong style="color:var(--text)">nama acara yang sama persis</strong> seperti dalam Tetapan.<br>
-          <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
-            <span style="color:var(--text);font-weight:600">Nilai yang diterima:</span>
-            <span style="background:rgba(39,201,122,0.1);border:1px solid rgba(39,201,122,0.3);color:var(--green);padding:2px 8px;border-radius:5px;font-size: 16px;font-weight:700">✓ &nbsp;1 &nbsp;ya &nbsp;yes &nbsp;u &nbsp;utama</span>
-            <span style="color:var(--muted);font-size: 16px">→ Utama</span>
-            <span style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);color:#a78bfa;padding:2px 8px;border-radius:5px;font-size: 16px;font-weight:700">S &nbsp;simpanan &nbsp;reserve</span>
-            <span style="color:var(--muted);font-size: 16px">→ Simpanan</span>
-            <span style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:2px 8px;border-radius:5px;font-size: 16px">— &nbsp;(kosong)</span>
-            <span style="color:var(--muted);font-size: 16px">→ Tidak menyertai</span>
-          </div>
-        </div>
-        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <button class="btn btn-outline btn-sm" onclick="downloadImportTemplate()">⬇️ Muat turun Template CSV</button>
-          <span style="font-size: 16px;color:var(--muted)">Template mengandungi contoh 2 baris dan semua acara yang telah ditetapkan.</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Step 2: Preview -->
-    <div id="import-step-preview" style="display:none">
-      <div id="import-summary" style="margin-bottom:12px;font-size: 16px"></div>
-      <div id="import-errors-wrap" style="display:none;margin-bottom:12px"></div>
-      <div class="table-wrap" style="max-height:320px;overflow-y:auto">
-        <table style="font-size: 16px" id="import-preview-table">
-          <thead id="import-preview-thead"></thead>
-          <tbody id="import-preview-tbody"></tbody>
-        </table>
-      </div>
-      <div style="margin-top:10px;font-size: 16px;color:var(--muted)" id="import-mode-info"></div>
-    </div>
-
-    <div class="flex-end" style="margin-top:20px">
-      <button class="btn btn-outline" onclick="closeImportModal()">Batal</button>
-      <button class="btn btn-outline btn-sm" onclick="triggerImportCSV()" id="import-choose-again-btn" style="display:none">📂 Pilih Fail Lain</button>
-      <button class="btn btn-gold" id="import-confirm-btn" style="display:none" onclick="confirmImport()">✅ Import Sekarang</button>
-    </div>
-  </div>
-</div>
-
-</div><!-- end main-app -->
-</body>
-</html>
