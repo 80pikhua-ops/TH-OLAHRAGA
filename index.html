@@ -1458,7 +1458,7 @@
             </div>
             <div class="form-group">
               <label>Tahun *</label>
-              <input type="number" id="rekod-tahun" placeholder="Cth: 2024" min="1990" max="2099">
+              <input type="number" id="rekod-tahun" placeholder="Cth: 2024" min="1900" max="2099">
             </div>
             <input type="hidden" id="rekod-edit-id">
             <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
@@ -5057,7 +5057,7 @@ function saveRekod() {
   if (!kat || !acara || !namaAtlet || !nilai || !tahun) {
     showAlert('Sila isi semua medan bertanda *', 'error'); return;
   }
-  if (isNaN(parseInt(tahun)) || parseInt(tahun) < 1990 || parseInt(tahun) > 2099) {
+  if (isNaN(parseInt(tahun)) || parseInt(tahun) < 1900 || parseInt(tahun) > 2099) {
     showAlert('Tahun tidak sah', 'error'); return;
   }
 
@@ -6080,15 +6080,18 @@ function renderCetak() {
         const right = rightCol[i] || null;
         const cellStyle = `padding:7px 10px;border:1px solid var(--border);vertical-align:top;color:${color};background:${bgRow}`;
         const noColor = isSimpanan ? '#a78bfa' : (left && left.isPasukanRow ? 'var(--blue)' : 'var(--gold)');
+        const emptyCell = `<td style="${cellStyle};width:12%"></td>`;
         const renderCell = p => p
           ? isPasukanAcara
             ? `<td style="${cellStyle};width:10%"></td>
-               <td style="${cellStyle};width:30%;font-weight:700;color:#6ba3f5">🏫 ${p.nama}</td>
-               <td style="${cellStyle};width:10%;font-size:15px;color:var(--muted)">${p.sekolah}</td>`
+               <td style="${cellStyle};width:28%;font-weight:700;color:#6ba3f5">🏫 ${p.nama}</td>
+               <td style="${cellStyle};width:10%;font-size:15px;color:var(--muted)">${p.sekolah}</td>
+               <td style="${cellStyle};width:12%"></td>`
             : `<td style="${cellStyle};width:10%;white-space:nowrap;font-weight:700;color:${noColor}">${p.noAtlet || '—'}</td>
-               <td style="${cellStyle};width:30%;font-weight:600">${p.nama}</td>
-               <td style="${cellStyle};width:10%;font-size:15px;color:var(--muted)">${p.sekolah}</td>`
-          : `<td style="${cellStyle};width:10%"></td><td style="${cellStyle};width:30%"></td><td style="${cellStyle};width:10%"></td>`;
+               <td style="${cellStyle};width:28%;font-weight:600">${p.nama}</td>
+               <td style="${cellStyle};width:10%;font-size:15px;color:var(--muted)">${p.sekolah}</td>
+               <td style="${cellStyle};width:12%"></td>`
+          : `<td style="${cellStyle};width:10%"></td><td style="${cellStyle};width:28%"></td><td style="${cellStyle};width:10%"></td>${emptyCell}`;
         rows += `<tr>${renderCell(left)}${renderCell(right)}</tr>`;
       }
       return rows;
@@ -6100,17 +6103,21 @@ function renderCetak() {
     const thStyle = `padding:8px 10px;border:1px solid var(--border);text-align:left;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted)`;
     const tableHeaders = isPasukanAcara
       ? `<th style="${thStyle};width:10%"></th>
-         <th style="${thStyle};width:30%">Pasukan / Sekolah</th>
+         <th style="${thStyle};width:28%">Pasukan / Sekolah</th>
          <th style="${thStyle};width:10%">Kategori</th>
+         <th style="${thStyle};width:12%">L/G</th>
          <th style="${thStyle};width:10%"></th>
-         <th style="${thStyle};width:30%">Pasukan / Sekolah</th>
-         <th style="${thStyle};width:10%">Kategori</th>`
+         <th style="${thStyle};width:28%">Pasukan / Sekolah</th>
+         <th style="${thStyle};width:10%">Kategori</th>
+         <th style="${thStyle};width:12%">L/G</th>`
       : `<th style="${thStyle};width:10%">No. Peserta</th>
-         <th style="${thStyle};width:30%">Nama Peserta</th>
+         <th style="${thStyle};width:28%">Nama Peserta</th>
          <th style="${thStyle};width:10%">Pasukan</th>
+         <th style="${thStyle};width:12%">L/G</th>
          <th style="${thStyle};width:10%">No. Peserta</th>
-         <th style="${thStyle};width:30%">Nama Peserta</th>
-         <th style="${thStyle};width:10%">Pasukan</th>`;
+         <th style="${thStyle};width:28%">Nama Peserta</th>
+         <th style="${thStyle};width:10%">Pasukan</th>
+         <th style="${thStyle};width:12%">L/G</th>`;
 
     const footerLabel = isPasukanAcara
       ? `${utamaPeserta.length} pasukan berdaftar`
@@ -6175,7 +6182,7 @@ function renderCetak() {
             ${buildTwoColRows(utamaPeserta, false)}
             ${simpananPeserta.length ? `
             <tr>
-              <td colspan="6" style="padding:6px 10px;background:rgba(139,92,246,0.08);border:1px solid var(--border);border-top:2px solid rgba(139,92,246,0.4)">
+              <td colspan="8" style="padding:6px 10px;background:rgba(139,92,246,0.08);border:1px solid var(--border);border-top:2px solid rgba(139,92,246,0.4)">
                 <span style="font-size:14px;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:0.8px">🔄 Peserta Simpanan (${simpananPeserta.length})</span>
               </td>
             </tr>
@@ -6324,8 +6331,8 @@ function printCetak() {
       html += `<table style="table-layout:fixed">
         <thead>
           <tr>
-            <th style="width:10%">${thNo}</th><th style="width:30%">${thNama}</th><th style="width:10%">${thTeam}</th>
-            <th style="width:10%">${thNo}</th><th style="width:30%">${thNama}</th><th style="width:10%">${thTeam}</th>
+            <th style="width:9%">${thNo}</th><th style="width:27%">${thNama}</th><th style="width:10%">${thTeam}</th><th style="width:11%">L/G</th>
+            <th style="width:9%">${thNo}</th><th style="width:27%">${thNama}</th><th style="width:10%">${thTeam}</th><th style="width:11%">L/G</th>
           </tr>
         </thead>
         <tbody>`;
@@ -6337,15 +6344,15 @@ function printCetak() {
         for (let i = 0; i < half; i++) {
           const l = lCol[i], r = rCol[i] || null;
           out += `<tr${rowClass ? ` class="${rowClass}"` : ''}>
-            <td class="no-peserta">${l.noAtlet || '—'}</td><td class="nama-peserta">${l.nama}</td><td class="pasukan">${l.sekolah}</td>
-            ${r ? `<td class="no-peserta">${r.noAtlet || '—'}</td><td class="nama-peserta">${r.nama}</td><td class="pasukan">${r.sekolah}</td>` : '<td></td><td></td><td></td>'}
+            <td class="no-peserta">${l.noAtlet || '—'}</td><td class="nama-peserta">${l.nama}</td><td class="pasukan">${l.sekolah}</td><td></td>
+            ${r ? `<td class="no-peserta">${r.noAtlet || '—'}</td><td class="nama-peserta">${r.nama}</td><td class="pasukan">${r.sekolah}</td><td></td>` : '<td></td><td></td><td></td><td></td>'}
           </tr>`;
         }
         return out;
       };
       html += buildPrintRows(utama, '');
       if (simpanan.length) {
-        html += `<tr><td colspan="6" class="simpanan-header">🔄 Peserta Simpanan (${simpanan.length})</td></tr>`;
+        html += `<tr><td colspan="8" class="simpanan-header">🔄 Peserta Simpanan (${simpanan.length})</td></tr>`;
         html += buildPrintRows(simpanan, 'simpanan-row');
       }
       const footerTxt = isPasukanAcara
