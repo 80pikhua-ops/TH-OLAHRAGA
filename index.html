@@ -2614,7 +2614,14 @@ function renderAtletByAcara() {
     </div>
   </div>`;
 
-  const thAcara = allAcara.map(n => `<th style="text-align:center;white-space:nowrap;font-size: 16px;padding:8px 6px;max-width:80px;word-break:break-word">${n}</th>`).join('');
+  const thAcara = allAcara.map(n => {
+    const isLong = n.length > 5;
+    return isLong
+      ? `<th style="text-align:center;font-size:15px;padding:4px 2px;width:32px;min-width:28px;max-width:36px">
+           <div style="writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;font-size:14px;font-weight:700;letter-spacing:0.3px;line-height:1.1;height:90px;display:flex;align-items:center;justify-content:center">${n}</div>
+         </th>`
+      : `<th style="text-align:center;white-space:nowrap;font-size:16px;padding:8px 6px">${n}</th>`;
+  }).join('');
 
   let tableRows = '';
   let rowNum = 1;
