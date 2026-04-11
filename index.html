@@ -5032,6 +5032,7 @@ function renderTetapanSummary() {
 
 // ===== REKOD ACARA =====
 let rekodAcara = [];
+let cetakLGMap = {}; // stores random lorong/giliran assignments per schedule index
 
 function saveRekodStore() {
   DB.set(kKey('rekod_acara'), rekodAcara);
@@ -5993,6 +5994,8 @@ function renderCetak() {
   const wrap = document.getElementById('cetak-wrap');
   if (!wrap) return;
 
+  cetakLGMap = {}; // reset random assignments on each render
+
   const tarikhF = document.getElementById('cetak-filter-tarikh')?.value || '';
   const katF    = document.getElementById('cetak-filter-kat')?.value || '';
 
@@ -6081,26 +6084,40 @@ function renderCetak() {
       const half    = Math.ceil(list.length / 2);
       const leftCol  = list.slice(0, half);
       const rightCol = list.slice(half);
+      // Generate random lorong/giliran numbers for utama (shuffle 1..n)
+      let lgNums = [];
+      if (!isSimpanan) {
+        lgNums = Array.from({length: list.length}, (_, k) => k + 1);
+        for (let k = lgNums.length - 1; k > 0; k--) {
+          const j = Math.floor(Math.random() * (k + 1));
+          [lgNums[k], lgNums[j]] = [lgNums[j], lgNums[k]];
+        }
+        cetakLGMap[sIdx] = lgNums; // save for printCetak to reuse
+      }
       let rows = '';
       for (let i = 0; i < half; i++) {
         const left  = leftCol[i];
         const right = rightCol[i] || null;
         const cellStyle = `padding:7px 10px;border:1px solid var(--border);vertical-align:top;color:${color};background:${bgRow}`;
         const noColor = isSimpanan ? '#a78bfa' : (left && left.isPasukanRow ? 'var(--blue)' : 'var(--gold)');
-        const lgInput = (side) => {
-          const idKey = `lg-${sIdx}-${isSimpanan?'s':'u'}-${side}-${i}`;
-          return `<td style="${cellStyle};width:4%;padding:4px 6px"><input id="${idKey}" type="text" placeholder="—" maxlength="1" style="width:100%;text-align:center;font-size:14px;font-weight:700;background:rgba(245,197,24,0.08);border:1px solid rgba(245,197,24,0.3);border-radius:5px;padding:4px 2px;color:var(--gold);outline:none;font-family:'Outfit',sans-serif"></td>`;
+        const lgAuto = (side) => {
+          // Auto-generate random number for utama only; blank for simpanan
+          let numStr = '';
+          if (!isSimpanan) {
+            numStr = side === 'L' ? String(lgNums[i]) : (rightCol[i] ? String(lgNums[half + i]) : '');
+          }
+          return `<td style="${cellStyle};width:4%;padding:4px 6px;text-align:center;font-size:14px;font-weight:700;color:var(--gold)">${numStr}</td>`;
         };
         const renderCell = (p, side) => p
           ? isPasukanAcara
             ? `<td style="${cellStyle};width:10%"></td>
                <td style="${cellStyle};width:28%;font-weight:700;color:#6ba3f5">🏫 ${p.nama}</td>
                <td style="${cellStyle};width:8%;font-size:15px;color:var(--muted)">${p.sekolah}</td>
-               ${lgInput(side)}`
+               ${lgAuto(side)}`
             : `<td style="${cellStyle};width:10%;white-space:nowrap;font-weight:700;color:${noColor}">${p.noAtlet || '—'}</td>
                <td style="${cellStyle};width:28%;font-weight:600">${p.nama}</td>
                <td style="${cellStyle};width:8%;font-size:15px;color:var(--muted)">${p.sekolah}</td>
-               ${lgInput(side)}`
+               ${lgAuto(side)}`
           : `<td style="${cellStyle};width:10%"></td><td style="${cellStyle};width:28%"></td><td style="${cellStyle};width:8%"></td><td style="${cellStyle};width:4%"></td>`;
         rows += `<tr>${renderCell(left,'L')}${renderCell(right,'R')}</tr>`;
       }
@@ -6350,14 +6367,23 @@ function printCetak() {
         const half = Math.ceil(arr.length / 2);
         const lCol = arr.slice(0, half);
         const rCol = arr.slice(half);
+        // Reuse random numbers from preview (cetakLGMap); fallback to shuffle if not found
+        let lgNums = [];
+        if (!isSim) {
+          lgNums = cetakLGMap[schedIdx] || (() => {
+            const a = Array.from({length: arr.length}, (_, k) => k + 1);
+            for (let k = a.length - 1; k > 0; k--) {
+              const j = Math.floor(Math.random() * (k + 1));
+              [a[k], a[j]] = [a[j], a[k]];
+            }
+            return a;
+          })();
+        }
         let out = '';
         for (let i = 0; i < half; i++) {
           const l = lCol[i], r = rCol[i] || null;
-          const getLG = (side) => {
-            const el = document.getElementById(`lg-${schedIdx}-${isSim?'s':'u'}-${side}-${i}`);
-            return el ? (el.value.trim() || '') : '';
-          };
-          const lgL = getLG('L'), lgR = r ? getLG('R') : '';
+          const lgL = isSim ? '' : String(lgNums[i]);
+          const lgR = (r && !isSim) ? String(lgNums[half + i]) : '';
           out += `<tr${rowClass ? ` class="${rowClass}"` : ''}>
             <td class="no-peserta">${l.noAtlet || '—'}</td><td class="nama-peserta">${l.nama}</td><td class="pasukan">${l.sekolah}</td><td style="text-align:center;font-weight:700">${lgL}</td>
             ${r ? `<td class="no-peserta">${r.noAtlet || '—'}</td><td class="nama-peserta">${r.nama}</td><td class="pasukan">${r.sekolah}</td><td style="text-align:center;font-weight:700">${lgR}</td>` : '<td></td><td></td><td></td><td></td>'}
