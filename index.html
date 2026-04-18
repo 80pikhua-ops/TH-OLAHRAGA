@@ -3662,16 +3662,17 @@ function acaraListHtml(acaraList) {
     if (a.isPasukan !== b.isPasukan) return a.isPasukan ? 1 : -1;
     return (a.nama || '').localeCompare(b.nama || '');
   });
-  const medalIcon = (t) => t === 1 ? '🥇' : t === 2 ? '🥈' : '🥉';
+  const medalIcon  = (t) => t === 1 ? '🥇' : t === 2 ? '🥈' : '🥉';
+  const medalLabel = (t) => t === 1 ? 'Emas' : t === 2 ? 'Perak' : 'Gangsa';
   const medalColor = (t) => t === 1 ? '#ffd700' : t === 2 ? '#c0c0c0' : '#cd7f32';
+  const medalBg    = (t) => t === 1 ? '255,215,0' : t === 2 ? '192,192,192' : '205,127,50';
   return `<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px">
     ${sorted.map(a => {
-      const icon = medalIcon(a.tempat);
       const col  = medalColor(a.tempat);
-      const pasTag = a.isPasukan ? '<span style="font-size:11px;opacity:0.7">👥</span>' : '';
-      const rekodTag = a.rekod ? '<span style="color:var(--accent);font-size:11px;font-weight:800">⚡R</span>' : '';
-      return `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;background:rgba(${a.tempat===1?'255,215,0':a.tempat===2?'192,192,192':'205,127,50'},0.10);border:1px solid ${col}44;font-size:14px;font-weight:600;color:${col}">
-        ${icon}${pasTag} ${a.nama} ${rekodTag}
+      const pasTag   = a.isPasukan ? ' <span style="font-size:12px;opacity:0.75">👥</span>' : '';
+      const rekodTag = a.rekod ? ' <span style="color:var(--accent);font-size:12px;font-weight:800">⚡ Rekod Baru</span>' : '';
+      return `<span style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;background:rgba(${medalBg(a.tempat)},0.10);border:1px solid ${col}44;font-size:14px;font-weight:600;color:${col}">
+        ${medalIcon(a.tempat)} ${medalLabel(a.tempat)}${pasTag} — ${a.nama}${rekodTag}
       </span>`;
     }).join('')}
   </div>`;
@@ -4500,8 +4501,8 @@ function printPapanAwards() {
   const acaraPrintText = (acaraList) => {
     if (!acaraList || !acaraList.length) return '';
     const sorted = [...acaraList].sort((a, b) => a.tempat - b.tempat || (a.isPasukan ? 1 : -1));
-    const mi = (t) => t === 1 ? '🥇' : t === 2 ? '🥈' : '🥉';
-    return sorted.map(a => `${mi(a.tempat)}${a.isPasukan ? '👥' : ''} ${a.nama}${a.rekod ? ' ⚡' : ''}`).join('  ·  ');
+    const mi = (t) => t === 1 ? '🥇 Emas' : t === 2 ? '🥈 Perak' : '🥉 Gangsa';
+    return sorted.map(a => `${mi(a.tempat)}${a.isPasukan ? ' 👥' : ''} — ${a.nama}${a.rekod ? ' ⚡ Rekod Baru' : ''}`).join('  ·  ');
   };
 
   const renderAwardCards = (winners, borderColor) => {
