@@ -4507,9 +4507,24 @@ function printPapanAwards() {
 
   const acaraPrintText = (acaraList) => {
     if (!acaraList || !acaraList.length) return '';
-    const sorted = [...acaraList].sort((a, b) => a.tempat - b.tempat || (a.isPasukan ? 1 : -1));
-    const mi = (t) => t === 1 ? '🥇 Emas' : t === 2 ? '🥈 Perak' : '🥉 Gangsa';
-    return sorted.map(a => `${mi(a.tempat)}${a.isPasukan ? ' 👥' : ''} — ${a.nama}${a.rekod ? ' ⚡ Rekod Baru' : ''}${a.prestasi ? ' ('+a.prestasi+')' : ''}`).join('  ·  ');
+    const sorted = [...acaraList].sort((a, b) => {
+      if (b.rekod !== a.rekod) return (b.rekod ? 1 : 0) - (a.rekod ? 1 : 0);
+      return a.tempat - b.tempat || (a.isPasukan ? 1 : -1);
+    });
+    const medalLabel = (t) => t === 1 ? 'Emas' : t === 2 ? 'Perak' : 'Gangsa';
+    const medalColor = (t) => t === 1 ? '#a07800' : t === 2 ? '#666' : '#7a4e1e';
+    const rows = sorted.map((a, i) => {
+      const col = medalColor(a.tempat);
+      const pas = a.isPasukan ? ' (Pasukan)' : '';
+      const rekod = a.rekod ? ' ⚡ Rekod Baru' : '';
+      const prestasi = a.prestasi ? ` (${a.prestasi})` : '';
+      return `<div style="display:flex;align-items:baseline;gap:6px;padding:3px 6px;border-left:3px solid ${col};margin-bottom:3px;background:#fafafa">
+        <span style="color:#aaa;font-size:8pt;min-width:14px">${i+1}.</span>
+        <span style="color:${col};font-size:9pt;font-weight:800">${medalLabel(a.tempat)}</span>
+        <span style="color:#222;font-size:9pt;font-weight:600">— ${a.nama}${pas}${rekod}${prestasi}</span>
+      </div>`;
+    });
+    return `<div style="margin-top:4px">${rows.join('')}</div>`;
   };
 
   const renderAwardCards = (winners, borderColor) => {
@@ -4520,7 +4535,7 @@ function printPapanAwards() {
         <div class="winner-name">${w.atletNama}</div>
         <div class="winner-school">🏫 ${w.sekolah}</div>
         <div class="winner-stats">${statsText(w)}</div>
-        ${w.acaraList && w.acaraList.length ? `<div style="font-size:9pt;color:#333;margin-top:5px;padding-top:5px;border-top:1px solid #eee"><strong>Acara Menang:</strong> ${acaraPrintText(w.acaraList)}</div>` : ''}
+        ${w.acaraList && w.acaraList.length ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid #eee"><div style="font-size:8.5pt;font-weight:800;color:#555;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">Acara Menang</div>${acaraPrintText(w.acaraList)}</div>` : ''}
       </div>`).join('');
     return tiedNote + cards;
   };
@@ -4548,7 +4563,7 @@ function printPapanAwards() {
       const list = byKat[kat].filter(a => !excludeIds.has(a.atletId));
       if (!list.length) return;
       const top = list[0];
-      html += `<tr><td style="font-weight:700">${kat}</td><td><strong>${top.atletNama}</strong></td><td style="color:#555">${top.sekolah}</td><td style="font-size:9.5pt">${statsText(top)}</td><td style="font-size:8.5pt;color:#333">${acaraPrintText(top.acaraList || [])}</td></tr>`;
+      html += `<tr><td style="font-weight:700">${kat}</td><td><strong>${top.atletNama}</strong></td><td style="color:#555">${top.sekolah}</td><td style="font-size:9.5pt">${statsText(top)}</td><td style="font-size:8.5pt;color:#333;min-width:180px">${acaraPrintText(top.acaraList || [])}</td></tr>`;
     });
     html += `</tbody></table>`;
   }
