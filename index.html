@@ -3382,8 +3382,7 @@ function computePesertaTerbaik() {
         kategori: r.kategori,
         rekod: 0,
         emasIndividu: 0, perakIndividu: 0, gansaIndividu: 0,
-        emasPasukan: 0, perakPasukan: 0, gansaPasukan: 0,
-        acaraList: []
+        emasPasukan: 0, perakPasukan: 0, gansaPasukan: 0
       };
     }
     const s = byAtletKat[key];
@@ -3393,7 +3392,6 @@ function computePesertaTerbaik() {
       else if (pos === 2) s.perakIndividu++;
       else if (pos === 3) s.gansaIndividu++;
     }
-    s.acaraList.push({ nama: r.acara, tempat: pos, prestasi: r.prestasi || '', isPasukan: false, rekod: !!r.rekod });
   });
 
   // Now add pasukan medals for each individual athlete
@@ -3421,12 +3419,10 @@ function computePesertaTerbaik() {
             kategori: kat,
             rekod: 0,
             emasIndividu: 0, perakIndividu: 0, gansaIndividu: 0,
-            emasPasukan: 0, perakPasukan: 0, gansaPasukan: 0,
-            acaraList: []
+            emasPasukan: 0, perakPasukan: 0, gansaPasukan: 0
           };
         }
         byAtletKat[key][medalField]++;
-        byAtletKat[key].acaraList.push({ nama: pr.acara, tempat: parseInt(pr.tempat), prestasi: pr.prestasi || '', isPasukan: true, rekod: false });
       });
     });
   }
@@ -3472,9 +3468,9 @@ function renderPesertaTerbaik() {
   }
 
   // Get Olahragawan & Olahragawati winners to exclude them from Peserta Terbaik
-  const olWinners  = computeOlahragawan('OL');
-  const owaWinners = computeOlahragawan('OWA');
-  const excludeIds = new Set([...olWinners, ...owaWinners].map(w => w.atletId).filter(Boolean));
+  const olWinner  = computeOlahragawan('OL');
+  const owaWinner = computeOlahragawan('OWA');
+  const excludeIds = new Set([olWinner?.atletId, owaWinner?.atletId].filter(Boolean));
 
   container.innerHTML = katList.map(kat => {
     // Remove Olahragawan/Olahragawati from this category's list
@@ -3506,13 +3502,12 @@ function renderPesertaTerbaik() {
     };
 
     const winnerCards = tied.map(w => `
-      <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(245,197,24,0.07);border:1px solid rgba(245,197,24,0.25);border-radius:10px;flex:1;min-width:220px">
-        <div style="font-size:32px;flex-shrink:0">⭐</div>
-        <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(245,197,24,0.07);border:1px solid rgba(245,197,24,0.25);border-radius:10px;flex:1;min-width:220px">
+        <div style="font-size:32px">⭐</div>
+        <div style="flex:1">
           <div style="font-weight:800;font-size:18px;color:var(--gold)">${w.atletNama}</div>
           <div style="font-size:16px;color:var(--muted);margin-top:1px">${w.sekolah}</div>
           <div style="font-size:15px;margin-top:5px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">${statsHtml(w)}</div>
-          ${(w.acaraList && w.acaraList.length) ? `<div style="margin-top:8px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px">Acara Menang:</div>${acaraListHtml(w.acaraList)}` : ''}
         </div>
       </div>`).join('');
 
@@ -3523,14 +3518,13 @@ function renderPesertaTerbaik() {
     const runnersHtml = runners.length ? `
       <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
         ${runners.map((r, i) => `
-          <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px">
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;min-width:28px;color:var(--muted);padding-top:2px">${tied.length + i + 1}</div>
-            <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;min-width:28px;color:var(--muted)">${tied.length + i + 1}</div>
+            <div style="flex:1">
               <div style="font-weight:700;font-size:16px">${r.atletNama}</div>
               <div style="font-size:15px;color:var(--muted)">${r.sekolah}</div>
-              <div style="font-size:15px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px">${statsHtml(r)}</div>
-              ${(r.acaraList && r.acaraList.length) ? acaraListHtml(r.acaraList) : ''}
             </div>
+            <div style="font-size:15px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;justify-content:flex-end">${statsHtml(r)}</div>
           </div>`).join('')}
       </div>` : '';
 
@@ -3583,8 +3577,7 @@ function computeOlahragawan(gender) {
         kategori: r.kategori,
         rekod: 0,
         emasIndividu: 0, perakIndividu: 0, gansaIndividu: 0,
-        emasPasukan: 0, perakPasukan: 0, gansaPasukan: 0,
-        acaraList: []
+        emasPasukan: 0, perakPasukan: 0, gansaPasukan: 0
       };
     }
     const s = byAtlet[key];
@@ -3592,7 +3585,6 @@ function computeOlahragawan(gender) {
     if (pos === 1) s.emasIndividu++;
     else if (pos === 2) s.perakIndividu++;
     else if (pos === 3) s.gansaIndividu++;
-    s.acaraList.push({ nama: r.acara, tempat: pos, prestasi: r.prestasi || '', isPasukan: false, rekod: !!r.rekod });
   });
 
   // Add pasukan medals
@@ -3612,13 +3604,11 @@ function computeOlahragawan(gender) {
           atletId: aid, atletNama: atlet.nama, sekolah: atlet.sekolah,
           kategori: pr.kategori, rekod: 0,
           emasIndividu: 0, perakIndividu: 0, gansaIndividu: 0,
-          emasPasukan: 0, perakPasukan: 0, gansaPasukan: 0,
-          acaraList: []
+          emasPasukan: 0, perakPasukan: 0, gansaPasukan: 0
         };
       }
       const field = pos === 1 ? 'emasPasukan' : pos === 2 ? 'perakPasukan' : 'gansaPasukan';
       byAtlet[aid][field]++;
-      byAtlet[aid].acaraList.push({ nama: pr.acara, tempat: pos, prestasi: pr.prestasi || '', isPasukan: true, rekod: false });
     });
   });
 
@@ -3638,69 +3628,30 @@ function computeOlahragawan(gender) {
     return a.atletNama.localeCompare(b.atletNama);
   });
 
-  if (!list.length) return [];
-  const top = list[0];
-  const tied = list.filter(a =>
-    a.rekod === top.rekod &&
-    a.emasIndividu === top.emasIndividu &&
-    a.perakIndividu === top.perakIndividu &&
-    a.gansaIndividu === top.gansaIndividu &&
-    a.emasPasukan === top.emasPasukan &&
-    a.perakPasukan === top.perakPasukan &&
-    a.gansaPasukan === top.gansaPasukan
-  );
-  return tied;
-}
-
-// Helper: render winning event list as compact chips
-function acaraListHtml(acaraList) {
-  if (!acaraList || !acaraList.length) return '';
-  // Sort: emas first, then perak, then gangsa; individual before pasukan; rekod first
-  const sorted = [...acaraList].sort((a, b) => {
-    if (b.rekod !== a.rekod) return (b.rekod ? 1 : 0) - (a.rekod ? 1 : 0);
-    if (a.tempat !== b.tempat) return a.tempat - b.tempat;
-    if (a.isPasukan !== b.isPasukan) return a.isPasukan ? 1 : -1;
-    return (a.nama || '').localeCompare(b.nama || '');
-  });
-  const medalIcon  = (t) => t === 1 ? '🥇' : t === 2 ? '🥈' : '🥉';
-  const medalLabel = (t) => t === 1 ? 'Emas' : t === 2 ? 'Perak' : 'Gangsa';
-  const medalColor = (t) => t === 1 ? '#ffd700' : t === 2 ? '#c0c0c0' : '#cd7f32';
-  const medalBg    = (t) => t === 1 ? '255,215,0' : t === 2 ? '192,192,192' : '205,127,50';
-  return `<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px">
-    ${sorted.map(a => {
-      const col  = medalColor(a.tempat);
-      const pasTag   = a.isPasukan ? ' <span style="font-size:12px;opacity:0.75">👥</span>' : '';
-      const rekodTag = a.rekod ? ' <span style="color:var(--accent);font-size:12px;font-weight:800">⚡ Rekod Baru</span>' : '';
-      return `<span style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;background:rgba(${medalBg(a.tempat)},0.10);border:1px solid ${col}44;font-size:14px;font-weight:600;color:${col}">
-        ${medalIcon(a.tempat)} ${medalLabel(a.tempat)}${pasTag} — ${a.nama}${rekodTag}
-      </span>`;
-    }).join('')}
-  </div>`;
+  return list.length > 0 ? list[0] : null;
 }
 
 function renderOlahragawan() {
   function buildCard(containerId, gender, accentColor) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    const winners = computeOlahragawan(gender);
-    if (!winners.length) {
+    const winner = computeOlahragawan(gender);
+    if (!winner) {
       container.innerHTML = '<div class="empty-state" style="padding:28px"><div class="empty-icon" style="font-size:36px">🏅</div><p>Belum ada keputusan untuk dikira</p></div>';
       return;
     }
 
-    const isTied = winners.length > 1;
-
-    const statsHtml = (w) => {
+    const statsHtml = (() => {
       const parts = [];
-      if (w.rekod > 0) parts.push(`<span style="color:var(--accent);font-weight:700;font-size:15px">⚡ ${w.rekod} rekod</span>`);
-      if (w.emasIndividu > 0) parts.push(`<span style="color:#ffd700;font-size:15px">🥇 Emas ${w.emasIndividu}</span>`);
-      if (w.perakIndividu > 0) parts.push(`<span style="color:#c0c0c0;font-size:15px">🥈 Perak ${w.perakIndividu}</span>`);
-      if (w.gansaIndividu > 0) parts.push(`<span style="color:#cd7f32;font-size:15px">🥉 Gangsa ${w.gansaIndividu}</span>`);
-      if (w.emasPasukan > 0) parts.push(`<span style="color:#ffd700;opacity:0.75;font-size:15px">🥇👥 Emas ${w.emasPasukan}</span>`);
-      if (w.perakPasukan > 0) parts.push(`<span style="color:#c0c0c0;opacity:0.75;font-size:15px">🥈👥 Perak ${w.perakPasukan}</span>`);
-      if (w.gansaPasukan > 0) parts.push(`<span style="color:#cd7f32;opacity:0.75;font-size:15px">🥉👥 Gangsa ${w.gansaPasukan}</span>`);
+      if (winner.rekod > 0) parts.push(`<span style="color:var(--accent);font-weight:700;font-size:15px">⚡ ${winner.rekod} rekod</span>`);
+      if (winner.emasIndividu > 0) parts.push(`<span style="color:#ffd700;font-size:15px">🥇 Emas ${winner.emasIndividu}</span>`);
+      if (winner.perakIndividu > 0) parts.push(`<span style="color:#c0c0c0;font-size:15px">🥈 Perak ${winner.perakIndividu}</span>`);
+      if (winner.gansaIndividu > 0) parts.push(`<span style="color:#cd7f32;font-size:15px">🥉 Gangsa ${winner.gansaIndividu}</span>`);
+      if (winner.emasPasukan > 0) parts.push(`<span style="color:#ffd700;opacity:0.75;font-size:15px">🥇👥 Emas ${winner.emasPasukan}</span>`);
+      if (winner.perakPasukan > 0) parts.push(`<span style="color:#c0c0c0;opacity:0.75;font-size:15px">🥈👥 Perak ${winner.perakPasukan}</span>`);
+      if (winner.gansaPasukan > 0) parts.push(`<span style="color:#cd7f32;opacity:0.75;font-size:15px">🥉👥 Gangsa ${winner.gansaPasukan}</span>`);
       return parts.join(' &nbsp;');
-    };
+    })();
 
     // Show which categories were used
     const selectedKats = gender === 'OL'
@@ -3710,24 +3661,16 @@ function renderOlahragawan() {
       ? `<span style="font-size:14px;color:var(--muted)">Kategori: ${selectedKats.join(', ')}</span>`
       : `<span style="font-size:14px;color:var(--muted)">Semua kategori</span>`;
 
-    const bgCol  = gender === 'OL' ? 'rgba(58,123,213,0.07)'   : 'rgba(244,114,182,0.07)';
-    const brdCol = gender === 'OL' ? 'rgba(58,123,213,0.25)'   : 'rgba(244,114,182,0.25)';
-
-    const winnerCards = winners.map(w => `
-      <div style="display:flex;align-items:flex-start;gap:16px;padding:18px 16px;background:${bgCol};border:1px solid ${brdCol};border-radius:12px;flex:1;min-width:200px">
+    container.innerHTML = `
+      <div style="display:flex;align-items:center;gap:16px;padding:18px 16px;background:${gender==='OL'?'rgba(58,123,213,0.07)':'rgba(244,114,182,0.07)'};border:1px solid ${gender==='OL'?'rgba(58,123,213,0.25)':'rgba(244,114,182,0.25)'};border-radius:12px">
         <div style="font-size:52px;line-height:1;flex-shrink:0">👑</div>
         <div style="flex:1;min-width:0">
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:${accentColor};letter-spacing:0.5px;line-height:1.1">${w.atletNama}</div>
-          <div style="font-size:15px;color:var(--muted);margin-top:4px">🏫 ${w.sekolah}</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px">${statsHtml(w)}</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:${accentColor};letter-spacing:0.5px;line-height:1.1">${winner.atletNama}</div>
+          <div style="font-size:15px;color:var(--muted);margin-top:4px">🏫 ${winner.sekolah}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px">${statsHtml}</div>
           <div style="margin-top:8px">${katInfo}</div>
-          ${(w.acaraList && w.acaraList.length) ? `<div style="margin-top:10px;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px">Acara Menang:</div>${acaraListHtml(w.acaraList)}` : ''}
         </div>
-      </div>`).join('');
-
-    container.innerHTML = `
-      ${isTied ? `<div style="margin-bottom:10px;padding:6px 12px;background:rgba(232,67,58,0.08);border:1px solid rgba(232,67,58,0.25);border-radius:8px;font-size:14px;font-weight:700;color:var(--accent)">⚠️ Seri — ${winners.length} peserta</div>` : ''}
-      <div style="display:flex;flex-wrap:wrap;gap:12px">${winnerCards}</div>`;
+      </div>`;
   }
 
   buildCard('olahragawan-card', 'OL', '#6ba3f5');
@@ -4463,12 +4406,12 @@ function printScoreboard() {
 }
 
 function printPapanAwards() {
-  const olWinners  = computeOlahragawan('OL');
-  const owaWinners = computeOlahragawan('OWA');
+  const olWinner  = computeOlahragawan('OL');
+  const owaWinner = computeOlahragawan('OWA');
   const byKat     = computePesertaTerbaik();
   const katList   = Object.keys(byKat).sort();
 
-  const excludeIds = new Set([...olWinners, ...owaWinners].map(w => w.atletId).filter(Boolean));
+  const excludeIds = new Set([olWinner?.atletId, owaWinner?.atletId].filter(Boolean));
 
   const statsText = s => {
     const parts = [];
@@ -4498,37 +4441,29 @@ function printPapanAwards() {
   html += `<div class="doc-header"><h1>🏅 Anugerah — ${tetapan.nama||'Kejohanan Olahraga'}</h1>
   <div class="doc-meta">Dicetak: ${new Date().toLocaleString('ms-MY')}</div></div>`;
 
-  const acaraPrintText = (acaraList) => {
-    if (!acaraList || !acaraList.length) return '';
-    const sorted = [...acaraList].sort((a, b) => a.tempat - b.tempat || (a.isPasukan ? 1 : -1));
-    const mi = (t) => t === 1 ? '🥇 Emas' : t === 2 ? '🥈 Perak' : '🥉 Gangsa';
-    return sorted.map(a => `${mi(a.tempat)}${a.isPasukan ? ' 👥' : ''} — ${a.nama}${a.rekod ? ' ⚡ Rekod Baru' : ''}`).join('  ·  ');
-  };
-
-  const renderAwardCards = (winners, borderColor) => {
-    if (!winners.length) return `<div style="color:#888;font-style:italic;padding:8px">Tiada data</div>`;
-    const tiedNote = winners.length > 1 ? `<div style="font-size:9pt;color:#c0392b;font-weight:700;margin-bottom:6px">⚠️ Seri — ${winners.length} peserta</div>` : '';
-    const cards = winners.map(w => `
-      <div class="award-card" style="border-left:4px solid ${borderColor}">
-        <div class="winner-name">${w.atletNama}</div>
-        <div class="winner-school">🏫 ${w.sekolah}</div>
-        <div class="winner-stats">${statsText(w)}</div>
-        ${w.acaraList && w.acaraList.length ? `<div style="font-size:9pt;color:#333;margin-top:5px;padding-top:5px;border-top:1px solid #eee"><strong>Acara Menang:</strong> ${acaraPrintText(w.acaraList)}</div>` : ''}
-      </div>`).join('');
-    return tiedNote + cards;
-  };
-
   // Olahragawan
   html += `<div class="section">
-    <div class="section-title" style="background:#dde8f8;color:#1a4fa0">🏅 Olahragawan</div>
-    ${renderAwardCards(olWinners, '#1a4fa0')}
-  </div>`;
+    <div class="section-title" style="background:#dde8f8;color:#1a4fa0">🏅 Olahragawan</div>`;
+  if (olWinner) {
+    html += `<div class="award-card" style="border-left:4px solid #1a4fa0">
+      <div class="winner-name">${olWinner.atletNama}</div>
+      <div class="winner-school">🏫 ${olWinner.sekolah}</div>
+      <div class="winner-stats">${statsText(olWinner)}</div>
+    </div>`;
+  } else { html += `<div style="color:#888;font-style:italic;padding:8px">Tiada data</div>`; }
+  html += `</div>`;
 
   // Olahragawati
   html += `<div class="section">
-    <div class="section-title" style="background:#fce8f5;color:#9b1a6e">🏅 Olahragawati</div>
-    ${renderAwardCards(owaWinners, '#c0548f')}
-  </div>`;
+    <div class="section-title" style="background:#fce8f5;color:#9b1a6e">🏅 Olahragawati</div>`;
+  if (owaWinner) {
+    html += `<div class="award-card" style="border-left:4px solid #c0548f">
+      <div class="winner-name">${owaWinner.atletNama}</div>
+      <div class="winner-school">🏫 ${owaWinner.sekolah}</div>
+      <div class="winner-stats">${statsText(owaWinner)}</div>
+    </div>`;
+  } else { html += `<div style="color:#888;font-style:italic;padding:8px">Tiada data</div>`; }
+  html += `</div>`;
 
   // Peserta Terbaik (No.1 per kategori)
   html += `<div class="section">
@@ -4536,12 +4471,12 @@ function printPapanAwards() {
   if (!katList.length) {
     html += `<div style="color:#888;font-style:italic;padding:8px">Tiada data</div>`;
   } else {
-    html += `<table><thead><tr><th style="width:80px">Kategori</th><th>Peserta Terbaik</th><th style="width:140px">Pasukan</th><th>Pencapaian</th><th>Acara Menang</th></tr></thead><tbody>`;
+    html += `<table><thead><tr><th style="width:100px">Kategori</th><th>Peserta Terbaik</th><th style="width:160px">Pasukan</th><th>Pencapaian</th></tr></thead><tbody>`;
     katList.forEach(kat => {
       const list = byKat[kat].filter(a => !excludeIds.has(a.atletId));
       if (!list.length) return;
       const top = list[0];
-      html += `<tr><td style="font-weight:700">${kat}</td><td><strong>${top.atletNama}</strong></td><td style="color:#555">${top.sekolah}</td><td style="font-size:9.5pt">${statsText(top)}</td><td style="font-size:8.5pt;color:#333">${acaraPrintText(top.acaraList || [])}</td></tr>`;
+      html += `<tr><td style="font-weight:700">${kat}</td><td><strong>${top.atletNama}</strong></td><td style="color:#555">${top.sekolah}</td><td style="font-size:9.5pt">${statsText(top)}</td></tr>`;
     });
     html += `</tbody></table>`;
   }
