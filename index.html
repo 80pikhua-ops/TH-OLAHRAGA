@@ -3670,14 +3670,19 @@ function acaraListHtml(acaraList) {
   const medalIcon  = (t) => t === 1 ? '🥇' : t === 2 ? '🥈' : '🥉';
   const medalLabel = (t) => t === 1 ? 'Emas' : t === 2 ? 'Perak' : 'Gangsa';
   const medalColor = (t) => t === 1 ? '#ffd700' : t === 2 ? '#c0c0c0' : '#cd7f32';
-  const parts = sorted.map(a => {
-    const col = medalColor(a.tempat);
-    const pas = a.isPasukan ? ' (Pasukan)' : '';
-    const rekod = a.rekod ? ' ⚡ Rekod Baru' : '';
-    const prestasi = a.prestasi ? ` (${a.prestasi})` : '';
-    return `<span style="color:${col};font-weight:700;font-size:18px;white-space:nowrap">${medalLabel(a.tempat)} — ${a.nama}${pas}${rekod}${prestasi}</span>`;
-  });
-  return `<div style="margin-top:10px;font-size:18px;line-height:1.8">${parts.join('<span style="color:var(--muted);font-weight:400">,&nbsp;&nbsp;</span>')}</div>`;
+  return `<div style="margin-top:10px;display:flex;flex-direction:column;gap:4px">
+    ${sorted.map((a, i) => {
+      const col = medalColor(a.tempat);
+      const pas = a.isPasukan ? ' <span style="color:var(--muted);font-weight:600">(Pasukan)</span>' : '';
+      const rekod = a.rekod ? ' <span style="color:var(--accent);font-weight:800">⚡ Rekod Baru</span>' : '';
+      const prestasi = a.prestasi ? ` <span style="color:var(--muted);font-weight:500">(${a.prestasi})</span>` : '';
+      return `<div style="display:flex;align-items:baseline;gap:8px;padding:5px 10px;border-radius:8px;background:var(--bg2);border-left:3px solid ${col}">
+        <span style="color:var(--muted);font-size:13px;font-weight:700;min-width:18px;opacity:0.6">${i+1}.</span>
+        <span style="font-size:17px;font-weight:700;color:${col}">${medalLabel(a.tempat)}</span>
+        <span style="font-size:17px;font-weight:600;color:var(--text);flex:1">— ${a.nama}${pas}${rekod}${prestasi}</span>
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 
 function renderOlahragawan() {
