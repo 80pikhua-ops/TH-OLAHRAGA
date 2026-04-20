@@ -3658,10 +3658,9 @@ function computeOlahragawan(gender) {
   return tied;
 }
 
-// Helper: render winning event list as compact chips
+// Helper: render winning event list as large clear rows
 function acaraListHtml(acaraList) {
   if (!acaraList || !acaraList.length) return '';
-  // Sort: emas first, then perak, then gangsa; individual before pasukan; rekod first
   const sorted = [...acaraList].sort((a, b) => {
     if (b.rekod !== a.rekod) return (b.rekod ? 1 : 0) - (a.rekod ? 1 : 0);
     if (a.tempat !== b.tempat) return a.tempat - b.tempat;
@@ -3671,18 +3670,14 @@ function acaraListHtml(acaraList) {
   const medalIcon  = (t) => t === 1 ? '🥇' : t === 2 ? '🥈' : '🥉';
   const medalLabel = (t) => t === 1 ? 'Emas' : t === 2 ? 'Perak' : 'Gangsa';
   const medalColor = (t) => t === 1 ? '#ffd700' : t === 2 ? '#c0c0c0' : '#cd7f32';
-  const medalBg    = (t) => t === 1 ? '255,215,0' : t === 2 ? '192,192,192' : '205,127,50';
-  return `<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px">
-    ${sorted.map(a => {
-      const col  = medalColor(a.tempat);
-      const pasTag   = a.isPasukan ? ' <span style="font-size:12px;opacity:0.75">👥</span>' : '';
-      const rekodTag = a.rekod ? ' <span style="color:var(--accent);font-size:12px;font-weight:800">⚡ Rekod Baru</span>' : '';
-      const prestasiTag = a.prestasi ? ` <span style="color:${col};opacity:0.75;font-size:12px;font-weight:500">(${a.prestasi})</span>` : '';
-      return `<span style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;background:rgba(${medalBg(a.tempat)},0.10);border:1px solid ${col}44;font-size:14px;font-weight:600;color:${col}">
-        ${medalIcon(a.tempat)} ${medalLabel(a.tempat)}${pasTag} — ${a.nama}${rekodTag}${prestasiTag}
-      </span>`;
-    }).join('')}
-  </div>`;
+  const parts = sorted.map(a => {
+    const col = medalColor(a.tempat);
+    const pas = a.isPasukan ? ' (Pasukan)' : '';
+    const rekod = a.rekod ? ' ⚡ Rekod Baru' : '';
+    const prestasi = a.prestasi ? ` (${a.prestasi})` : '';
+    return `<span style="color:${col};font-weight:700;font-size:18px;white-space:nowrap">${medalLabel(a.tempat)} — ${a.nama}${pas}${rekod}${prestasi}</span>`;
+  });
+  return `<div style="margin-top:10px;font-size:18px;line-height:1.8">${parts.join('<span style="color:var(--muted);font-weight:400">,&nbsp;&nbsp;</span>')}</div>`;
 }
 
 function renderOlahragawan() {
